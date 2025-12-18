@@ -1,0 +1,230 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fashion E-commerce Design System
+   Luxury & Elegant aesthetic with warm, earthy tones
+   Based on provided color guide
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Core Semantic Colors from Color Guide */
+    --background: 36 30% 96%;           /* Off-white - main background */
+    --foreground: 0 0% 18%;             /* Title-Active - primary text */
+    
+    --card: 33 55% 94%;                 /* Background - element backgrounds */
+    --card-foreground: 0 0% 18%;        /* Title-Active */
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 18%;
+    
+    /* Primary - Terracotta/Copper */
+    --primary: 20 40% 54%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary - Muted Peach */
+    --secondary: 20 38% 65%;
+    --secondary-foreground: 0 0% 18%;
+    
+    /* Muted colors for subtle elements */
+    --muted: 36 40% 93%;                /* Input Background */
+    --muted-foreground: 0 0% 42%;       /* Label */
+    
+    /* Accent - Line color */
+    --accent: 28 35% 67%;
+    --accent-foreground: 0 0% 18%;
+    
+    /* Destructive */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Borders and inputs */
+    --border: 28 25% 82%;
+    --input: 36 40% 93%;
+    --ring: 20 40% 54%;
+    
+    --radius: 0.25rem;
+    
+    /* Custom design tokens */
+    --body: 0 0% 24%;                   /* Body text */
+    --label: 0 0% 42%;                  /* Label text */
+    --placeholder: 0 0% 62%;            /* Placeholder text */
+    --line: 28 35% 67%;                 /* Line elements */
+    --input-bg: 36 40% 93%;             /* Input backgrounds */
+    --element-bg: 33 55% 94%;           /* Element backgrounds */
+    --off-white: 0 0% 97%;              /* Pure off-white */
+    
+    /* Typography */
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'Inter', sans-serif;
+    
+    /* Shadows for luxury feel */
+    --shadow-soft: 0 2px 15px -3px hsl(0 0% 0% / 0.08);
+    --shadow-elegant: 0 10px 40px -10px hsl(20 40% 54% / 0.15);
+    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.06);
+    
+    /* Sidebar */
+    --sidebar-background: 36 30% 96%;
+    --sidebar-foreground: 0 0% 24%;
+    --sidebar-primary: 20 40% 54%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 33 55% 94%;
+    --sidebar-accent-foreground: 0 0% 18%;
+    --sidebar-border: 28 25% 82%;
+    --sidebar-ring: 20 40% 54%;
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 36 30% 96%;
+    
+    --card: 0 0% 12%;
+    --card-foreground: 36 30% 96%;
+    
+    --popover: 0 0% 10%;
+    --popover-foreground: 36 30% 96%;
+    
+    --primary: 20 45% 58%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 20 35% 35%;
+    --secondary-foreground: 36 30% 96%;
+    
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    
+    --accent: 28 30% 40%;
+    --accent-foreground: 36 30% 96%;
+    
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 20 45% 58%;
+    
+    --body: 0 0% 75%;
+    --label: 0 0% 55%;
+    --placeholder: 0 0% 45%;
+    --line: 28 25% 35%;
+    --input-bg: 0 0% 15%;
+    --element-bg: 0 0% 12%;
+    --off-white: 0 0% 10%;
+    
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 36 30% 96%;
+    --sidebar-primary: 20 45% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 36 30% 96%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 20 45% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-medium tracking-tight;
+  }
+
+  /* Luxury typography defaults */
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  p {
+    @apply text-body leading-relaxed;
+  }
+}
+
+@layer utilities {
+  /* Text colors from design system */
+  .text-body {
+    color: hsl(var(--body));
+  }
+  
+  .text-label {
+    color: hsl(var(--label));
+  }
+  
+  .text-placeholder {
+    color: hsl(var(--placeholder));
+  }
+  
+  /* Background utilities */
+  .bg-element {
+    background-color: hsl(var(--element-bg));
+  }
+  
+  .bg-input-custom {
+    background-color: hsl(var(--input-bg));
+  }
+  
+  .bg-off-white {
+    background-color: hsl(var(--off-white));
+  }
+  
+  /* Line/border utilities */
+  .border-line {
+    border-color: hsl(var(--line));
+  }
+  
+  .bg-line {
+    background-color: hsl(var(--line));
+  }
+  
+  /* Font families */
+  .font-display {
+    font-family: var(--font-display);
+  }
+  
+  .font-body {
+    font-family: var(--font-body);
+  }
+  
+  /* Shadows */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  /* Luxury hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elegant);
+  }
+}
