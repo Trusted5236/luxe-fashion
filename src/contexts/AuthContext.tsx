@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
 import { mockUsers } from '@/data/mockData';
+import { signup as signupAPI, getProfile, loginApi} from '@/services/api';
+import { json } from 'stream/consumers';
 
 interface AuthContextType {
   user: User | null;
@@ -15,69 +17,75 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  console.log(user)
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const storedUser = localStorage.getItem('luxe_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+  const initAuth = async () => {
+    const token = localStorage.getItem('accessToken');
+    
+    if (token) {
+      await loadUserProfile();
+    } else {
+      const storedUser = localStorage.getItem('luxe_user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
+    
     setIsLoading(false);
-  }, []);
+  };
+
+  initAuth();
+}, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock authentication - find user by email
-    const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem('luxe_user', JSON.stringify(foundUser));
-      setIsLoading(false);
-      return { success: true };
-    }
-    
-    setIsLoading(false);
-    return { success: false, error: 'Invalid email or password' };
+   try {
+    await loginApi({email, password})
+    await loadUserProfile()
+    setIsLoading(false)
+    return {success : true}
+   } catch (error : any) {
+    setIsLoading(false)
+    return { success: false, error: error.message };
+   }
   };
 
   const signup = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if user already exists
-    const existingUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (existingUser) {
+    try {
+       await signupAPI({name, email, password})
+       await loadUserProfile()
+       setIsLoading(false);
+       return {success : true}
+    } catch (error) {
       setIsLoading(false);
-      return { success: false, error: 'An account with this email already exists' };
+      return { success: false, error: error.message };
     }
-    
-    // Create new user (in real app this would be an API call)
-    const newUser: User = {
-      id: `u${Date.now()}`,
-      email,
-      name,
-      role: 'user',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    
-    setUser(newUser);
-    localStorage.setItem('luxe_user', JSON.stringify(newUser));
-    setIsLoading(false);
-    return { success: true };
   };
+
+  const loadUserProfile = async () =>{
+    try {
+      const token = await localStorage.getItem('accessToken')
+
+      if(token){
+        const profile = await getProfile()
+        setUser(profile)
+        localStorage.setItem('luxe_user', JSON.stringify(profile))
+      }
+      
+    } catch (error) {
+      console.error('Failed to load profile:', error.message);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('luxe_user');
+    }
+  }
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('luxe_user');
+    localStorage.removeItem("accessToken")
   };
 
   return (

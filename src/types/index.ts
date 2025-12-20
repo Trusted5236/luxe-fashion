@@ -23,7 +23,7 @@ export interface User {
   name: string;
   role: 'user' | 'seller' | 'admin';
   avatar?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface CartItem {
@@ -57,3 +57,14 @@ export interface Category {
   image: string;
   productCount: number;
 }
+
+export interface SignupPayload {
+  name: string;
+  email: string;
+  password: string;
+}
+export interface loginPayload {
+  email: string;
+  password: string;
+}
+
