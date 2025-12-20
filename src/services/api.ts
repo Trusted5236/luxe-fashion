@@ -4,6 +4,9 @@ import {SignupPayload, User, loginPayload} from '../types/index.ts'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL ?? "https://luxe-fashion-backend.onrender.com/api"
 
+console.log('🔍 Checking environment:');
+console.log('VITE_BASE_URL:', import.meta.env.VITE_BASE_URL);
+console.log('Final BASE_URL:', BASE_URL);
 
 const getToken = (): string | null =>{
     return localStorage.getItem('accessToken')
