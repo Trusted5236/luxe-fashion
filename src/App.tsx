@@ -33,11 +33,11 @@ const App = () => (
               <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/forgot-password" element={<ForgotPassword/>} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/seller" element={<SellerDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
