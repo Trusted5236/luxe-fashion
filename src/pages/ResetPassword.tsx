@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { resetPasswordApi } from '@/services/api';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,7 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  
 
   useEffect(() => {
     // Get token from URL parameters
@@ -58,41 +60,20 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          token, 
-          password 
-        }),
+      await resetPasswordApi({ resetToken: token as string, newPassword: password });
+      setIsLoading(false);
+      toast({
+        title: 'Password Reset Successful',
+        description: 'You can now log in with your new password',
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: 'Success',
-          description: 'Your password has been reset successfully',
-        });
-        // Redirect to login page after 2 seconds
-        setTimeout(() => {
-          navigate('/auth');
-        }, 2000);
-      } else {
-        toast({
-          title: 'Error',
-          description: data.message || 'Failed to reset password',
-          variant: 'destructive',
-        });
-      }
+      navigate('/auth');
     } catch (error) {
+      setIsLoading(false);
       toast({
         title: 'Error',
-        description: 'Something went wrong. Please try again.',
+        description: (error as Error).message || 'Failed to reset password.',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

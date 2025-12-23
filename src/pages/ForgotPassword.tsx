@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { requestPasswordReset } from '@/services/api';
+import { set } from 'date-fns';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -17,35 +19,20 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+      await requestPasswordReset({email});
+      setIsLoading(false);
+      setSent(true);
+      toast({
+        title: 'Reset Link Sent',
+        description: 'Please check your email for further instructions.',
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSent(true);
-        toast({
-          title: 'Email sent',
-          description: 'Check your email for reset instructions',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: data.message,
-          variant: 'destructive',
-        });
-      }
     } catch (error) {
+      setIsLoading(false);
       toast({
         title: 'Error',
-        description: 'Something went wrong',
+        description: (error as Error).message || 'Failed to send reset link.',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -1,4 +1,4 @@
-import {SignupPayload, User, loginPayload} from '../types/index.ts'
+import {SignupPayload, User, loginPayload, requestPasswordPayload, resetPassword} from '../types/index.ts'
 
 
 
@@ -85,4 +85,34 @@ export const loginApi = async (userData : loginPayload)=>{
     return data
 }
 
+export const requestPasswordReset = async (userData : requestPasswordPayload) =>{
+    const response = await fetch(`${BASE_URL}/auth/request-password-reset`, {
+        method: 'POST',
+        headers : {
+            'Content-Type' : 'application/json',
+        }, 
+        body: JSON.stringify(userData)
+    })
+    const data = await response.json()
 
+    if(!response.ok){
+        throw new Error(data.message || "Request password reset failed")
+    }
+    return data
+}
+
+export const resetPasswordApi = async (userData : resetPassword) =>{
+    const response = await fetch(`${BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers : {
+            'Content-Type' : 'application/json',
+        }, 
+        body: JSON.stringify(userData)
+    })
+    const data = await response.json()
+
+    if(!response.ok){
+        throw new Error(data.message || "Reset password failed")
+    }
+    return data
+}
