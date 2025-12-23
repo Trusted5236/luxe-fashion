@@ -21,7 +21,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     // Get token from URL parameters
-    const tokenFromUrl = searchParams.get('token');
+    const tokenFromUrl = searchParams.get('resetToken');
     if (!tokenFromUrl) {
       toast({
         title: 'Invalid Link',
