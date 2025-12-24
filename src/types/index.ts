@@ -76,3 +76,8 @@ export interface resetPassword {
   newPassword: string;
 }
 
+export interface categoryPayload {
+  name: string;
+  imageUrl: string;
+}
+

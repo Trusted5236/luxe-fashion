@@ -1,4 +1,4 @@
-import {SignupPayload, User, loginPayload, requestPasswordPayload, resetPassword} from '../types/index.ts'
+import {SignupPayload, User, loginPayload, requestPasswordPayload, resetPassword, categoryPayload} from '../types/index.ts'
 
 
 
@@ -115,4 +115,62 @@ export const resetPasswordApi = async (userData : resetPassword) =>{
         throw new Error(data.message || "Reset password failed")
     }
     return data
+}
+
+export const postCategory = async (formData: FormData) => {
+    const token = getToken();
+    if (!token) {
+        throw new Error('No token found. Please login');
+    }
+    const response = await fetch(`${BASE_URL}/categories`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to create category');
+    }
+
+    return data;
+}
+
+export const fetchCategories = async () => {
+    const response = await fetch(`${BASE_URL}/categories`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    const data = await response.json();
+        
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch categories');
+    }
+    return data;        
+
+}
+
+export const deleteCategory = async (categoryId: string) => {
+    const token = getToken();
+    if (!token) {
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete category');
+    }
+    return data;
 }

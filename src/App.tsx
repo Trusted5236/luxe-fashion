@@ -16,6 +16,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Unauthorized from "./pages/Unauthorized";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -32,12 +34,35 @@ const App = () => (
               <Route path="/products" element={<Products />} />
               <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
               <Route path="/forgot-password" element={<ForgotPassword/>} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
-              <Route path="/seller" element={<SellerDashboard />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route 
+          path="/seller" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'seller']}>
+              <SellerDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        {/* <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        /> */}
+              <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
-import { mockUsers } from '@/data/mockData';
 import { signup as signupAPI, getProfile, loginApi} from '@/services/api';
-import { json } from 'stream/consumers';
 
 interface AuthContextType {
   user: User | null;
@@ -17,76 +15,118 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  console.log(user)
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-  const initAuth = async () => {
-    const token = localStorage.getItem('accessToken');
-    
-    if (token) {
-      await loadUserProfile();
-    } else {
+    const initAuth = async () => {
+      console.log('===== INIT AUTH START =====');
+      const token = localStorage.getItem('accessToken');
       const storedUser = localStorage.getItem('luxe_user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      
+      console.log('Token exists:', !!token);
+      console.log('Token value:', token?.substring(0, 20) + '...');
+      console.log('Stored user exists:', !!storedUser);
+      console.log('Stored user value:', storedUser);
+      
+      if (token) {
+        await loadUserProfile();
+      } else if (storedUser) {
+        console.log('Loading user from localStorage...');
+        try {
+          const parsed = JSON.parse(storedUser);
+          console.log('Parsed user:', parsed);
+          setUser(parsed);
+        } catch (e) {
+          console.error('Error parsing stored user:', e);
+        }
+      } else {
+        console.log('No token or stored user found');
       }
-    }
-    
-    setIsLoading(false);
-  };
+      
+      setIsLoading(false);
+    };
 
-  initAuth();
-}, []);
+    initAuth();
+  }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-   try {
-    await loginApi({email, password})
-    await loadUserProfile()
-    setIsLoading(false)
-    return {success : true}
-   } catch (error : any) {
-    setIsLoading(false)
-    return { success: false, error: error.message };
-   }
-  };
-
-  const signup = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
-    setIsLoading(true);
     try {
-       await signupAPI({name, email, password})
-       await loadUserProfile()
-       setIsLoading(false);
-       return {success : true}
-    } catch (error) {
+      console.log('Calling loginApi...');
+      const loginResponse = await loginApi({email, password});
+      await loadUserProfile();
+      
+      console.log('Login successful');
+      setIsLoading(false);
+      return {success : true}
+    } catch (error : any) {
+      console.error('Login error:', error);
       setIsLoading(false);
       return { success: false, error: error.message };
     }
   };
 
-  const loadUserProfile = async () =>{
+  const signup = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
     try {
-      const token = await localStorage.getItem('accessToken')
+      const signupResponse = await signupAPI({name, email, password});
+      console.log('Signup response:', signupResponse);
+      
+      console.log('Loading user profile...');
+      await loadUserProfile();
+      
+      console.log('Signup successful');
+      setIsLoading(false);
+      return {success : true}
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      setIsLoading(false);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const loadUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      console.log('Token in loadUserProfile:', !!token);
 
       if(token){
-        const profile = await getProfile()
-        setUser(profile)
-        localStorage.setItem('luxe_user', JSON.stringify(profile))
+        console.log('Calling getProfile API...');
+        const profile = await getProfile();
+        
+        console.log('Profile received:', profile);
+        console.log('Profile role:', profile?.role);
+        console.log('Profile type:', typeof profile);
+        
+        setUser(profile);
+        localStorage.setItem('luxe_user', JSON.stringify(profile));
+        console.log('User set in state and localStorage');
+      } else {
+        console.log('No token found in loadUserProfile');
       }
       
-    } catch (error) {
-      console.error('Failed to load profile:', error.message);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('luxe_user');
+    } catch (error: any) {
+      console.error('Error details:', error);
+      console.error('Error message:', error.message);
+      console.error('Error response:', error.response?.data);
+      
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('luxe_user');
+      setUser(null);
     }
   }
 
   const logout = () => {
+    console.log('===== LOGOUT =====');
     setUser(null);
     localStorage.removeItem('luxe_user');
-    localStorage.removeItem("accessToken")
+    localStorage.removeItem("accessToken");
   };
+
+  // Log whenever user changes
+  useEffect(() => {
+    console.log('User state changed:', user);
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ 
