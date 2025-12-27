@@ -6,9 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { mockProducts, mockOrders } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import AddProductForm from '@/components/AddProdouctForm';
+
 
 export default function SellerDashboard() {
   const { user } = useAuth();
+  const [showAddProduct, setShowAddProduct] = useState(false);
+
+  const handleAddProduct = (productData) => {
+  console.log('New product:', productData);
+  // Add your API call here
+  setShowAddProduct(false);
+};
+
   
   if (!user || user.role !== 'seller') {
     return <Navigate to="/auth" replace />;
@@ -25,9 +35,9 @@ export default function SellerDashboard() {
             <h1 className="font-display text-3xl font-medium">Seller Dashboard</h1>
             <p className="text-body mt-1">Welcome back, {user.name}</p>
           </div>
-          <Button variant="luxury">
-            <Plus className="h-4 w-4 mr-2" /> Add Product
-          </Button>
+          <Button variant="luxury" onClick={() => setShowAddProduct(true)}>
+  <Plus className="h-4 w-4 mr-2" /> Add Product
+</Button>
         </div>
 
         {/* Stats */}
@@ -91,6 +101,13 @@ export default function SellerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {showAddProduct && (
+  <AddProductForm 
+    onClose={() => setShowAddProduct(false)}
+    onSubmit={handleAddProduct}
+  />
+)}
     </Layout>
   );
 }
