@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, SlidersHorizontal, Grid3X3, LayoutGrid, ChevronDown } from 'lucide-react';
 import { Layout } from '@/components/layout';
@@ -9,6 +9,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { mockProducts, mockCategories } from '@/data/mockData';
+import { fetchProducts } from '@/services/api';
+import { set } from 'date-fns';
+import { fetchCategories } from '@/services/api';
 
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
@@ -27,51 +30,87 @@ const priceRanges = [
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [gridCols, setGridCols] = useState<2 | 3 | 4>(4);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.get('category')?.split(',').filter(Boolean) || []
-  );
+  const [categories, setCategories] = useState([]); 
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'featured');
+  const [productsData, setProducts] = useState([]);
+const [loading, setLoading] = useState(true);
 
-  const filteredProducts = useMemo(() => {
-    let products = [...mockProducts];
+  const loadCategories = async () => {
+        try {
+          const fetchedCategories = await fetchCategories();
+          setCategories(fetchedCategories);
+        } catch (error) {
+          console.error('Error fetching categories:', error);
+        }
+      };
+  
+    useEffect(() => {
+      loadCategories();
+    }, []);
 
-    // Filter by category
-    if (selectedCategories.length > 0) {
-      products = products.filter(p => selectedCategories.includes(p.category));
+
+useEffect(()=>{
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchProducts(selectedCategories[0], searchParams.get('search') || '');
+      const mappedProducts = data.products.map(p => ({
+        id: p._id,  // Map _id to id
+        sellerName: p.sellerName,
+        name: p.title,  // Map title to name
+        price: p.price,
+        images: p.images,
+        image: p.displayImage,  // Add if ProductCard needs it
+        category: selectedCategories[0] || '',
+        rating: p.reviews.averageRating,
+        reviews: p.reviews.numberOfReviews,
+        originalPrice: p.bonus,
+        // Add any other fields ProductCard expects
+      }));
+      console.log('API Response:', data);
+console.log('Products array:', data.products);
+      setProducts(mappedProducts);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching products:', error);
     }
+  }
 
-    // Filter by price range
-    if (selectedPriceRanges.length > 0) {
-      products = products.filter(p => {
-        return selectedPriceRanges.some(range => {
-          if (range === '0-100') return p.price < 100;
-          if (range === '100-250') return p.price >= 100 && p.price < 250;
-          if (range === '250-500') return p.price >= 250 && p.price < 500;
-          if (range === '500+') return p.price >= 500;
-          return true;
-        });
+  loadProducts();
+}, [selectedCategories, searchParams])
+
+ const filteredProducts = useMemo(() => {
+  let productList = [...productsData]; // ✅ Use products from API
+  
+  // Remove category filtering (backend already did it)
+  
+  // Keep price range filtering
+  if (selectedPriceRanges.length > 0) {
+    productList = productList.filter(p => {
+      return selectedPriceRanges.some(range => {
+        if (range === '0-100') return p.price < 100;
+        if (range === '100-250') return p.price >= 100 && p.price < 250;
+        if (range === '250-500') return p.price >= 250 && p.price < 500;
+        if (range === '500+') return p.price >= 500;
+        return true;
       });
-    }
+    });
+  }
 
-    // Sort products
-    switch (sortBy) {
-      case 'newest':
-        products.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      case 'price-low':
-        products.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        products.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        // Featured - keep original order
-        break;
-    }
+  // Keep sorting
+  switch (sortBy) {
+    case 'price-low':
+      productList.sort((a, b) => a.price - b.price);
+      break;
+    case 'price-high':
+      productList.sort((a, b) => b.price - a.price);
+      break;
+  }
 
-    return products;
-  }, [selectedCategories, selectedPriceRanges, sortBy]);
+  return productList;
+}, [productsData, selectedPriceRanges, sortBy]); // ✅ Change dependencies too
 
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev =>
@@ -101,18 +140,18 @@ export default function Products() {
       <div>
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Category</h3>
         <div className="space-y-3">
-          {mockCategories.map(category => (
-            <div key={category.id} className="flex items-center gap-3">
-              <Checkbox
-                id={`cat-${category.slug}`}
-                checked={selectedCategories.includes(category.slug)}
-                onCheckedChange={() => toggleCategory(category.slug)}
-              />
-              <Label htmlFor={`cat-${category.slug}`} className="text-sm text-body cursor-pointer">
-                {category.name} ({category.productCount})
-              </Label>
-            </div>
-          ))}
+          {categories.map(category => (
+  <div key={category._id} className="flex items-center gap-3">
+    <Checkbox
+      id={`cat-${category.name}`}
+      checked={selectedCategories.includes(category.name)}
+      onCheckedChange={() => toggleCategory(category.name)}
+    />
+    <Label htmlFor={`cat-${category.name}`}>
+      {category.name}
+    </Label>
+  </div>
+))}
         </div>
       </div>
 
@@ -143,6 +182,8 @@ export default function Products() {
       )}
     </div>
   );
+
+
 
   return (
     <Layout>
@@ -222,19 +263,22 @@ export default function Products() {
             </div>
           </aside>
 
+        
           {/* Products */}
-          <div className="flex-1">
-            {filteredProducts.length > 0 ? (
-              <ProductGrid products={filteredProducts} columns={gridCols} />
-            ) : (
-              <div className="text-center py-16">
-                <p className="text-lg text-body">No products found</p>
-                <Button variant="outline" onClick={clearFilters} className="mt-4">
-                  Clear Filters
-                </Button>
-              </div>
-            )}
-          </div>
+        <div className="flex-1">
+  {loading ? (
+    <div className="text-center py-16">Loading products...</div>
+  ) : filteredProducts.length > 0 ? (
+    <ProductGrid products={filteredProducts} columns={gridCols} />
+  ) : (
+    <div className="text-center py-16">
+      <p className="text-lg text-body">No products found</p>
+      <Button variant="outline" onClick={clearFilters} className="mt-4">
+        Clear Filters
+      </Button>
+    </div>
+  )}
+        </div>
         </div>
       </div>
     </Layout>

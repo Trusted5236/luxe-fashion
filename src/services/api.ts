@@ -174,3 +174,53 @@ export const deleteCategory = async (categoryId: string) => {
     }
     return data;
 }
+
+export const postProductApi = async (formData: FormData) => {
+    const token = getToken();
+    if (!token) {
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/products`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to create product');
+    }
+
+    return data;
+}
+
+export const fetchProducts = async (category?: string, search?: string) => {
+    let url = new URL(`${BASE_URL}/products`);
+
+    if (category) {
+        url.searchParams.append('category', category);
+    }
+
+    if (search) {
+        url.searchParams.append('search', search);
+    }
+
+    const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch products');
+    }
+
+    return data;
+};

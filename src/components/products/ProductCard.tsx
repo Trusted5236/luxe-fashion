@@ -21,7 +21,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {/* Image Container */}
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
           <img
-            src={product.images[0]}
+            src={product.image}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

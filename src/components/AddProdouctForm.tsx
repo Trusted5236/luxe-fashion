@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, Plus } from 'lucide-react';
 import { fetchCategories } from '@/services/api';
+import { postProductApi } from '@/services/api';
+import { toast } from '@/components/ui/use-toast';
 
 export default function AddProductForm({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
+    sellerName: '',
     title: '',
     description: '',
     category: '',
     price: '',
+    bonus: '',
     stock: '',
     media: []
   });
@@ -60,9 +64,41 @@ export default function AddProductForm({ onClose, onSubmit }) {
     setFormData({ ...formData, media: newFiles });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.sellerName || !formData.title || !formData.description || !formData.category || !formData.price || !formData.stock || formData.media.length === 0) {
+      return;
+    }
+
+    try {
+     const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('price', formData.price);
+    formDataToSend.append('bonus', formData.bonus);
+    formDataToSend.append('stock', formData.stock);
+    formDataToSend.append('sellerName', formData.sellerName);
+    formData.media.forEach((file) => {
+  formDataToSend.append('images', file); 
+});
+    await postProductApi(formDataToSend);
     onSubmit(formData);
+    toast({
+              title: 'Upload Successful',
+              description: 'Product created successfully',
+    });
+    onClose();
+
+    } catch (error) {
+      console.error('Error submitting product:', error);
+      toast({
+                  title: 'Upload Failed',
+                  description: error instanceof Error ? error.message : 'An unexpected error occurred',
+                  variant: 'destructive',
+                });
+    }
+    
   };
 
   return (
@@ -76,6 +112,22 @@ export default function AddProductForm({ onClose, onSubmit }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Seller Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="sellerName"
+              value={formData.sellerName}
+              onChange={handleChange}
+              maxLength={100}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              placeholder="Enter seller name"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-2">
               Product Title <span className="text-red-500">*</span>
@@ -123,14 +175,14 @@ export default function AddProductForm({ onClose, onSubmit }) {
               >
                 <option value="">Select category</option>
                 {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat._id}>{cat.name}</option>
                 ))}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Price ($) <span className="text-red-500">*</span>
+               Bonus Price ($) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -140,6 +192,22 @@ export default function AddProductForm({ onClose, onSubmit }) {
                 min="0"
                 step="0.01"
                 required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="0.00"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Price ($) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="bonus"
+                value={formData.bonus}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 placeholder="0.00"
               />
