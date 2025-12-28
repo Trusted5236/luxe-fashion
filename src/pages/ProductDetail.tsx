@@ -8,9 +8,11 @@ import { mockProducts } from '@/data/mockData';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 import { individualProducts } from '@/services/api';
+import { set } from 'date-fns';
 
 export default function ProductDetail() {
   const { id } = useParams();
+  console.log('Product ID from params:', id);
   const navigate = useNavigate();
   const { addItem } = useCart();
   
@@ -23,6 +25,7 @@ export default function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [product, setProduct] = useState(null);
+  console.log('Product ID:', product);
   const [loading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -47,12 +50,25 @@ export default function ProductDetail() {
           sizes: data.sizes || ['S', 'M', 'L', 'XL'], // Default sizes if not in API
         };
         setProduct(mappedProduct);
+        setLoading(false);
       } catch (error) {
          console.error('Error fetching product:', error);
+         setLoading(false)
       }
     }
     fetchProductDetails();
   }, [id]);
+
+    if (loading) {
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    </Layout>
+  );
+}
+
 
   if (!product) {
     return (
@@ -66,16 +82,9 @@ export default function ProductDetail() {
       </Layout>
     );
   }
+  
 
-  if (loading) {
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    </Layout>
-  );
-}
+
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
 

@@ -235,5 +235,5 @@ export const individualProducts = async (productId: string) => {
         throw new Error(data.message || 'Failed to fetch product details');
     }
 
-    return data;
+    return data.product;
 }
