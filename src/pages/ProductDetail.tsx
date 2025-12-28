@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Heart, Minus, Plus, Truck, RefreshCw, Shield, ChevronLeft } from 'lucide-react';
 import { Layout } from '@/components/layout';
@@ -7,19 +7,52 @@ import { Button } from '@/components/ui/button';
 import { mockProducts } from '@/data/mockData';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
+import { individualProducts } from '@/services/api';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
   
-  const product = mockProducts.find(p => p.id === id);
-  const relatedProducts = mockProducts.filter(p => p.id !== id && p.category === product?.category).slice(0, 4);
+  // const product = mockProducts.find(p => p.id === id);
+  // const relatedProducts = mockProducts.filter(p => p.id !== id && p.category === product?.category).slice(0, 4);
+
+
   
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(()=>{
+    const fetchProductDetails = async () => {
+      setLoading(true);
+      try {
+        const data = await individualProducts(id!);
+        const mappedProduct = {
+          id: data._id,
+          name: data.title,
+          price: data.price,
+          images: data.images,
+          sellerName: data.sellerName || 'Unknown Seller',
+          description: data.description,
+          category: data.category,
+          rating: data.reviews?.averageRating || 0,
+          reviewCount: data.reviews?.numberOfReviews || 0,
+          originalPrice: data.originalPrice,
+          colors: data.colors || [],
+          sizes: data.sizes || ['S', 'M', 'L', 'XL'], // Default sizes if not in API
+        };
+        setProduct(mappedProduct);
+      } catch (error) {
+         console.error('Error fetching product:', error);
+      }
+    }
+    fetchProductDetails();
+  }, [id]);
 
   if (!product) {
     return (
@@ -33,6 +66,16 @@ export default function ProductDetail() {
       </Layout>
     );
   }
+
+  if (loading) {
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    </Layout>
+  );
+}
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
 

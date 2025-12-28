@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { mockProducts, mockCategories } from '@/data/mockData';
 import { fetchProducts } from '@/services/api';
 import { set } from 'date-fns';
-import { fetchCategories } from '@/services/api';
+import { fetchCategories, individualProducts} from '@/services/api';
+import { useParams } from 'react-router-dom';
 
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
@@ -35,7 +36,12 @@ export default function Products() {
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'featured');
   const [productsData, setProducts] = useState([]);
-const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const perPage = 8;
+  const {id} = useParams();
+  const [productDetails, setProductDetails] = useState(null); 
 
   const loadCategories = async () => {
         try {
@@ -51,40 +57,45 @@ const [loading, setLoading] = useState(true);
     }, []);
 
 
-useEffect(()=>{
+useEffect(() => {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const data = await fetchProducts(selectedCategories[0], searchParams.get('search') || '');
+      const data = await fetchProducts(
+        selectedCategories[0], 
+        searchParams.get('search') || '',
+        currentPage,
+        perPage
+      );
+      
       const mappedProducts = data.products.map(p => ({
-        id: p._id,  // Map _id to id
+        id: p._id,
         sellerName: p.sellerName,
-        name: p.title,  // Map title to name
+        name: p.title,
         price: p.price,
         images: p.images,
-        image: p.displayImage,  // Add if ProductCard needs it
+        image: p.displayImage,
         category: selectedCategories[0] || '',
         rating: p.reviews.averageRating,
         reviews: p.reviews.numberOfReviews,
         originalPrice: p.bonus,
-        // Add any other fields ProductCard expects
       }));
-      console.log('API Response:', data);
-console.log('Products array:', data.products);
+      
       setProducts(mappedProducts);
-      setLoading(false);
+      setTotalPages(data.totalPages); // Store total pages
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   loadProducts();
-}, [selectedCategories, searchParams])
+}, [selectedCategories, searchParams, currentPage]);
 
  const filteredProducts = useMemo(() => {
-  let productList = [...productsData]; // ✅ Use products from API
-  
-  // Remove category filtering (backend already did it)
+  let productList = [...productsData];
+
   
   // Keep price range filtering
   if (selectedPriceRanges.length > 0) {
@@ -110,15 +121,15 @@ console.log('Products array:', data.products);
   }
 
   return productList;
-}, [productsData, selectedPriceRanges, sortBy]); // ✅ Change dependencies too
+}, [productsData, selectedPriceRanges, sortBy]);
 
-  const toggleCategory = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
-  };
+  // const toggleCategory = (category: string) => {
+  //   setSelectedCategories(prev =>
+  //     prev.includes(category)
+  //       ? prev.filter(c => c !== category)
+  //       : [...prev, category]
+  //   );
+  // };
 
   const togglePriceRange = (range: string) => {
     setSelectedPriceRanges(prev =>
@@ -182,6 +193,15 @@ console.log('Products array:', data.products);
       )}
     </div>
   );
+
+  const toggleCategory = (category: string) => {
+  setSelectedCategories(prev =>
+    prev.includes(category)
+      ? prev.filter(c => c !== category)
+      : [...prev, category]
+  );
+  setCurrentPage(1); // Reset to page 1
+};
 
 
 
@@ -263,13 +283,48 @@ console.log('Products array:', data.products);
             </div>
           </aside>
 
-        
-          {/* Products */}
-        <div className="flex-1">
+        {/* Products */}
+<div className="flex-1">
   {loading ? (
     <div className="text-center py-16">Loading products...</div>
   ) : filteredProducts.length > 0 ? (
-    <ProductGrid products={filteredProducts} columns={gridCols} />
+    <>
+      <ProductGrid products={filteredProducts} columns={gridCols} />
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <Button
+                key={page}
+                variant={currentPage === page ? "default" : "outline"}
+                onClick={() => setCurrentPage(page)}
+                className="w-10"
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+          
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+    </>
   ) : (
     <div className="text-center py-16">
       <p className="text-lg text-body">No products found</p>
@@ -278,7 +333,7 @@ console.log('Products array:', data.products);
       </Button>
     </div>
   )}
-        </div>
+</div>
         </div>
       </div>
     </Layout>

@@ -3,11 +3,14 @@ import { Heart } from 'lucide-react';
 import { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { individualProducts } from '@/services/api';
 
 interface ProductCardProps {
   product: Product;
   className?: string;
 }
+
+
 
 export function ProductCard({ product, className }: ProductCardProps) {
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;

@@ -198,29 +198,42 @@ export const postProductApi = async (formData: FormData) => {
     return data;
 }
 
-export const fetchProducts = async (category?: string, search?: string) => {
-    let url = new URL(`${BASE_URL}/products`);
+export const fetchProducts = async (
+  category?: string, 
+  search?: string,
+  page = 1,
+  perPage = 12
+) => {
+  let url = new URL(`${BASE_URL}/products`);
+  
+  if (category) url.searchParams.append('category', category);
+  if (search) url.searchParams.append('search', search);
+  url.searchParams.append('page', page.toString());
+  url.searchParams.append('perPage', perPage.toString());
+  
+  const response = await fetch(url.toString());
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch products');
+  }
+  
+  return data;
+};
 
-    if (category) {
-        url.searchParams.append('category', category);
-    }
-
-    if (search) {
-        url.searchParams.append('search', search);
-    }
-
-    const response = await fetch(url.toString(), {
+export const individualProducts = async (productId: string) => {
+    const response = await fetch(`${BASE_URL}/products/${productId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         },
-    })
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch products');
+        throw new Error(data.message || 'Failed to fetch product details');
     }
 
     return data;
-};
+}
