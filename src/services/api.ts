@@ -1,4 +1,4 @@
-import {SignupPayload, User, loginPayload, requestPasswordPayload, resetPassword, categoryPayload} from '../types/index.ts'
+import {SignupPayload, User, loginPayload, requestPasswordPayload, resetPassword, categoryPayload, Order, shippingOrder} from '../types/index.ts'
 
 
 
@@ -237,3 +237,188 @@ export const individualProducts = async (productId: string) => {
 
     return data.product;
 }
+
+export const addToCart = async (productId: string, quantity : number)=>{
+    const token = getToken()
+    if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/cart/${productId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        },
+        body : JSON.stringify({quantity})
+    });
+
+    const data = await response.json()
+
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Update Cart');
+    }
+
+    return data
+}
+
+export const getCartData = async ()=>{
+    const token = getToken()
+    if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/cart`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        },
+    });
+
+    const data = await response.json()
+
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Fetch Cart');
+    }
+
+    return data
+
+}
+
+export const increaseQuantity = async (productId: string, quantity : number)=>{
+    const token = getToken()
+     if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/cart/increase/${productId}`, {
+        method : 'PATCH',
+        headers:{
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        },
+        body : JSON.stringify({quantity})
+    })
+
+    const data = await response.json()
+
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Fetch Cart');
+    }
+
+    return data
+}
+
+export const decreaseQuantity = async (productId: string, quantity : number)=>{
+    const token = getToken()
+     if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/cart/decrease/${productId}`, {
+        method : 'PATCH',
+        headers:{
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        },
+        body : JSON.stringify({quantity})
+    })
+
+    const data = await response.json()
+
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Fetch Cart');
+    }
+
+    return data
+}
+
+export const deleteQuantity = async (productId: string)=>{
+    const token = getToken()
+     if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/cart/delete/${productId}`, {
+        method : 'PATCH',
+        headers:{
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        },
+    })
+
+    const data = await response.json()
+
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Fetch Cart');
+    }
+
+    return data
+}
+
+export const createOrder = async (userData : shippingOrder)=>{
+    const token = getToken()
+    if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/order/create`, {
+        method : "POST",
+        headers : {
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        }, 
+        body : JSON.stringify(userData)
+    })
+
+    const data = await response.json()
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Fetch Cart');
+    }
+    return data
+}
+
+export const createOrderPaypal = async (orderId : string)=>{
+    const token = getToken()
+    if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/order/paypal/create-order`, {
+        method : "POST",
+        headers : {
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        }, 
+        body : JSON.stringify({orderId})
+    })
+
+    const data = await response.json()
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Fetch Cart');
+    }
+    return data
+}
+export const captureOrderPaypal = async (orderId : string, paypalOrderId : string)=>{
+    const token = getToken()
+    if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/order/paypal/capture-order`, {
+        method : "POST",
+        headers : {
+            'Content-Type': 'application/json',
+            'Authorization' : `Bearer ${token}`
+        }, 
+        body : JSON.stringify({orderId, paypalOrderId})
+    })
+
+    const data = await response.json()
+    if(!response.ok){
+         throw new Error(data.message || 'Failed Fetch Cart');
+    }
+    return data
+}
+

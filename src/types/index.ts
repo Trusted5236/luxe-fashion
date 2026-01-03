@@ -41,7 +41,9 @@ export interface Order {
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   total: number;
   shippingAddress: {
-    name: string;
+    firstName: string;
+    lastName: string;
+    phone : string,
     address: string;
     city: string;
     state: string;
@@ -82,3 +84,20 @@ export interface categoryPayload {
   imageUrl: string;
 }
 
+export interface shippingOrder{
+  firstName: string;
+    lastName: string;
+    email : string,
+    phone : string,
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  image: string;
+}

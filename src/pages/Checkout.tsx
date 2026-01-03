@@ -10,12 +10,16 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { createOrder } from '@/services/api';
+import { PayPalButton } from '@/components/PaypalButton';
 
-const steps = ['Shipping', 'Payment', 'Review'];
+const steps = ['Shipping', 'Payment']; // Removed 'Review'
 
 export default function Checkout() {
   const [currentStep, setCurrentStep] = useState(0);
   const [shippingMethod, setShippingMethod] = useState('standard');
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const { items, total, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -31,10 +35,6 @@ export default function Checkout() {
     state: '',
     zip: '',
     country: 'USA',
-    cardNumber: '',
-    expiry: '',
-    cvv: '',
-    cardName: '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,19 +44,81 @@ export default function Checkout() {
   const shipping = shippingMethod === 'express' ? 25 : (total >= 200 ? 0 : 15);
   const grandTotal = total + shipping;
 
-  const handleSubmit = () => {
-    if (currentStep < 2) {
-      setCurrentStep(currentStep + 1);
+  const handleSubmit = async () => {
+    if (currentStep === 0) {
+      if (!formData.firstName || !formData.lastName || !formData.email || 
+          !formData.phone || !formData.address || !formData.city || 
+          !formData.state || !formData.zip) {
+        toast({
+          title: 'Validation Error',
+          description: 'Please fill in all required fields',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      setLoading(true);
+
+      try {
+        const response = await createOrder({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          country: formData.country,
+          zip: formData.zip
+        });
+
+        const data = await response;
+
+        if (data.orderId) {
+          setOrderId(data.orderId);
+          setCurrentStep(1);
+          toast({
+            title: 'Success',
+            description: 'Shipping information saved',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: data.message || 'Failed to create order',
+            variant: 'destructive'
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to create order',
+          variant: 'destructive'
+        });
+      } finally {
+        setLoading(false);
+      }
       return;
     }
+  };
 
-    // Place order
-    toast({
-      title: 'Order placed successfully!',
-      description: 'Thank you for your purchase. You will receive a confirmation email shortly.',
-    });
+  const handlePaymentSuccess = () => {
     clearCart();
-    navigate('/');
+    toast({
+      title: 'Payment Successful!',
+      description: 'Your order has been confirmed.',
+    });
+    // Navigate to order confirmation page with order details
+    navigate('/order-success', { 
+      state: { 
+        orderId, 
+        orderDetails: {
+          items,
+          total: grandTotal,
+          shipping: formData
+        }
+      } 
+    });
   };
 
   if (items.length === 0) {
@@ -201,144 +263,25 @@ export default function Checkout() {
                       />
                     </div>
                   </div>
-
-                  <div className="pt-6">
-                    <h3 className="font-medium mb-4">Shipping Method</h3>
-                    <RadioGroup value={shippingMethod} onValueChange={setShippingMethod}>
-                      <div className="flex items-center justify-between p-4 border border-border rounded cursor-pointer hover:border-foreground transition-colors">
-                        <div className="flex items-center gap-3">
-                          <RadioGroupItem value="standard" id="standard" />
-                          <div>
-                            <Label htmlFor="standard" className="cursor-pointer font-medium">
-                              Standard Shipping
-                            </Label>
-                            <p className="text-sm text-label">5-7 business days</p>
-                          </div>
-                        </div>
-                        <span>{total >= 200 ? 'Free' : '$15.00'}</span>
-                      </div>
-                      <div className="flex items-center justify-between p-4 border border-border rounded cursor-pointer hover:border-foreground transition-colors mt-2">
-                        <div className="flex items-center gap-3">
-                          <RadioGroupItem value="express" id="express" />
-                          <div>
-                            <Label htmlFor="express" className="cursor-pointer font-medium">
-                              Express Shipping
-                            </Label>
-                            <p className="text-sm text-label">2-3 business days</p>
-                          </div>
-                        </div>
-                        <span>$25.00</span>
-                      </div>
-                    </RadioGroup>
-                  </div>
                 </div>
               )}
 
               {currentStep === 1 && (
                 <div className="space-y-6">
-                  <h2 className="font-display text-2xl font-medium">Payment Information</h2>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cardName">Name on Card</Label>
-                    <Input
-                      id="cardName"
-                      name="cardName"
-                      value={formData.cardName}
-                      onChange={handleInputChange}
-                      className="h-12 bg-input-bg border-border"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-label" />
-                      <Input
-                        id="cardNumber"
-                        name="cardNumber"
-                        placeholder="1234 5678 9012 3456"
-                        value={formData.cardNumber}
-                        onChange={handleInputChange}
-                        className="h-12 pl-10 bg-input-bg border-border"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiry">Expiry Date</Label>
-                      <Input
-                        id="expiry"
-                        name="expiry"
-                        placeholder="MM/YY"
-                        value={formData.expiry}
-                        onChange={handleInputChange}
-                        className="h-12 bg-input-bg border-border"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cvv">CVV</Label>
-                      <Input
-                        id="cvv"
-                        name="cvv"
-                        placeholder="123"
-                        value={formData.cvv}
-                        onChange={handleInputChange}
-                        className="h-12 bg-input-bg border-border"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <h2 className="font-display text-2xl font-medium">Review Your Order</h2>
-
-                  <div className="space-y-4">
-                    <div className="p-4 bg-muted rounded">
-                      <h3 className="font-medium mb-2">Shipping Address</h3>
-                      <p className="text-sm text-body">
-                        {formData.firstName} {formData.lastName}<br />
-                        {formData.address}<br />
-                        {formData.city}, {formData.state} {formData.zip}
-                      </p>
-                    </div>
-
-                    <div className="p-4 bg-muted rounded">
-                      <h3 className="font-medium mb-2">Payment Method</h3>
-                      <p className="text-sm text-body">
-                        Card ending in {formData.cardNumber.slice(-4) || '****'}
-                      </p>
-                    </div>
-
-                    <div className="p-4 bg-muted rounded">
-                      <h3 className="font-medium mb-4">Items</h3>
-                      <div className="space-y-3">
-                        {items.map((item) => (
-                          <div
-                            key={`${item.product.id}-${item.size}-${item.color}`}
-                            className="flex items-center gap-3"
-                          >
-                            <img
-                              src={item.product.images[0]}
-                              alt={item.product.name}
-                              className="w-12 h-16 object-cover"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">{item.product.name}</p>
-                              <p className="text-xs text-label">
-                                {item.size} / {item.color} × {item.quantity}
-                              </p>
-                            </div>
-                            <span className="text-sm font-medium">
-                              ${(item.product.price * item.quantity).toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  <h2 className="font-display text-2xl font-medium">Payment</h2>
+                  <p className="text-body">Complete your payment using PayPal</p>
+                  
+                  <PayPalButton
+                    orderId={orderId!}
+                    onSuccess={handlePaymentSuccess}
+                    onError={(error) => {
+                      toast({
+                        title: 'Payment Error',
+                        description: 'An error occurred during payment',
+                        variant: 'destructive'
+                      });
+                    }}
+                  />
                 </div>
               )}
 
@@ -348,19 +291,22 @@ export default function Checkout() {
                   <Button
                     variant="outline"
                     size="lg"
-                    onClick={() => setCurrentStep(currentStep - 1)}
+                    onClick={() => setCurrentStep(0)}
                   >
                     Back
                   </Button>
                 )}
-                <Button
-                  variant="luxury"
-                  size="lg"
-                  className="flex-1"
-                  onClick={handleSubmit}
-                >
-                  {currentStep === 2 ? 'Place Order' : 'Continue'}
-                </Button>
+                {currentStep === 0 && (
+                  <Button
+                    variant="luxury"
+                    size="lg"
+                    className="flex-1"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                  >
+                    {loading ? 'Processing...' : 'Continue to Payment'}
+                  </Button>
+                )}
               </div>
             </div>
 

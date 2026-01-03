@@ -27,7 +27,7 @@ export default function Cart() {
     );
   }
 
-  const shipping = total >= 200 ? 0 : 15;
+  const shipping = 0;
   const grandTotal = total + shipping;
 
   return (

@@ -5,11 +5,15 @@ import { ProductGrid } from '@/components/products';
 import { CategoryCard } from '@/components/categories';
 import { Button } from '@/components/ui/button';
 import { mockProducts, mockCategories } from '@/data/mockData';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SplitType from "split-type"
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { fetchCategories} from '@/services/api';
+import { Category } from '@/types';
+import { heroContent } from '@/constants';
+console.log(heroContent)
 
 
 gsap.registerPlugin(ScrollTrigger)
@@ -31,19 +35,13 @@ const features = [
   },
 ];
 
-const images = [
-  "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=80",
-  "https://images.unsplash.com/photo-1699832728171-cf774fa92150?q=80&w=1330&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1724184888075-99af09dfa57c?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-]
+const images = heroContent.map(content => content.image);
 
 export default function Index() {
   const featuredProducts = mockProducts.slice(0, 4);
   const newArrivals = mockProducts.slice(4, 8);
   const containerRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
   const subTitleRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
 const featuredRef = useRef<HTMLDivElement>(null);
 const bannerRef = useRef<HTMLDivElement>(null);
@@ -52,176 +50,230 @@ const featuresRef = useRef<HTMLDivElement>(null);
 const categoryText = useRef<HTMLDivElement>(null);
 const featuredText = useRef<HTMLDivElement>(null);
 const arrivalText = useRef<HTMLDivElement>(null);
+const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+const [loading, setLoading] = useState(true);
+const heroRef = useRef(null);
+  const curveRef = useRef(null);
+  const titleRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const actionsRef = useRef(null);
+  const generalAction = useRef(null);
+  const imageRefs = useRef([]);
+  const titleH1Ref = useRef(null);
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-  useEffect(()=>{
-    if(!titleRef.current || !subTitleRef.current) return
 
-    const titleSplit = new SplitType(titleRef.current, {
-      types : "lines,words"
-    })
 
-    const subtitleSplit = new SplitType(subTitleRef.current, {
-      types : "words"
-    })
 
-    gsap.from(titleSplit.words, {
-    y: 40,
-    opacity: 0,
-    duration: 1,
-    ease: "power3.out",
-    stagger: 0.5,
-    })
+  useEffect(() => {
+  if (loading) return;
+  if (!titleRef.current || !titleH1Ref.current || !subtitleRef.current || !actionsRef.current) return;
 
-    gsap.from(subtitleSplit.words, {
-    y: 20,
-    opacity: 0,
-    duration: 0.8,
-    delay: 0.3,
-    ease: "power3.out",
-    stagger: 0.05,
-  });
+  const ctx = gsap.context(() => {
+    // Initial setup
+    gsap.set(imageRefs.current.slice(1), { opacity: 0 });
+    
+    // Function to animate content change
+    const animateContentChange = (index) => {
+      const tl = gsap.timeline();
+      
+      // Fade out current content
+      tl.to([titleRef.current, titleH1Ref.current, subtitleRef.current, actionsRef.current, generalAction.current], {
+        opacity: 0,
+        y: -30,
+        duration: 0.6,
+        ease: "power2.in",
+        stagger: 0.05
+      })
+      // Change content (this triggers React re-render)
+      .call(() => {
+        setCurrentHeroIndex(index);
+      })
+      // Wait for React to update DOM
+      .set({}, {}, "+=0.1")
+      // Fade in new content using .to() instead of .from()
+      .to([titleRef.current, titleH1Ref.current, subtitleRef.current, actionsRef.current, generalAction.current], {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.1
+      });
+      
+      return tl;
+    };
 
-  return ()=>{
-    titleSplit.revert()
-    subtitleSplit.revert()
+    // Image + Content rotation timeline (10 seconds each)
+    const mainTl = gsap.timeline({ repeat: -1 });
+    
+    heroContent.forEach((content, i) => {
+      const nextIndex = (i + 1) % heroContent.length;
+      
+      mainTl
+        // Show current image and content for 10 seconds
+        .to({}, { duration: 10 })
+        // Crossfade to next image
+        .to(imageRefs.current[i], {
+          opacity: 0,
+          scale: 1.1,
+          duration: 1.5,
+          ease: "power2.inOut"
+        }, "-=1.5")
+        .to(imageRefs.current[nextIndex], {
+          opacity: 1,
+          scale: 1,
+          duration: 1.5,
+          ease: "power2.inOut"
+        }, "<")
+        // Animate content change
+        .add(animateContentChange(nextIndex), "<");
+    });
+
+    // Initial content animation
+    gsap.from([titleRef.current, titleH1Ref.current, subtitleRef.current, actionsRef.current, generalAction.current], {
+      y: 100,
+      opacity: 0,
+      stagger: 0.15,
+      duration: 1,
+      ease: "elastic.out(1, 0.5)",
+      delay: 0.5
+    });
+
+    // Curve animation
+    if (curveRef.current) {
+      gsap.from(curveRef.current, {
+        scaleY: 0,
+        transformOrigin: "top",
+        duration: 1.2,
+        ease: "power3.inOut",
+        delay: 0.8
+      });
+    }
+  }, heroRef);
+
+  return () => ctx.revert();
+}, [loading]);
+
+  useEffect(() => {
+  const loadCategories = async () => {
+    setLoading(true)
+    try {
+      const fetchedCategories = await fetchCategories()
+      setSelectedCategories(fetchedCategories)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    } finally {
+      setLoading(false)
+    }
   }
-  }, [])
 
-  useGSAP(()=>{
-    const imgs = gsap.utils.toArray<HTMLImageElement>(".hero-image")
-
-    const tl = gsap.timeline({repeat : -1})
-
-    imgs.forEach((img, i)=>{
-      const next = imgs[(i + 1) % imgs.length]
-
-      tl
-      .to(img, { opacity: 0, scale: 1.1, duration: 1.5, ease: "power2.out" })
-      .to(next, { opacity: 1, scale: 1, duration: 5, ease: "power2.out" }, "<")
-      .to({}, { duration: 2 })
-    })
-  }, {scope: heroRef})
-
-  useGSAP(()=>{
-    gsap.from(categoryText.current?.querySelectorAll("h2, p"),{
-      scrollTrigger:{
-        trigger: categoriesRef.current,
-        start: "top 80%"
-      },
-      y: 30,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.15,
-    ease: "power3.out"
-    })
-
-
-    gsap.from(arrivalText.current?.querySelectorAll("h2, p"),{
-      scrollTrigger:{
-        trigger: arrivalsRef.current,
-        start: "top 80%"
-      },
-      y: 30,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.15,
-    ease: "power3.out"
-    })
+  loadCategories()
+}, [])
 
 
 
-    gsap.from(featuredText.current?.querySelectorAll("h2, p"),{
-      scrollTrigger:{
-        trigger: featuredRef.current,
-        start: "top 80%"
-      },
-      y: 30,
-    opacity: 0,
-    duration: 1,
-    stagger: 0.5,
-    ease: "power3.out"
-    })
-
-    gsap.from(".category-card", {
-      scrollTrigger: {
-        trigger: categoriesRef.current,
-        start: "top 80%"
-      },
-      y: 60,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.6,
-      ease: "power3.out"
-    })
-
-
-    gsap.from(".product-card", {
-      scrollTrigger: {
-        trigger: featuredRef.current ? featuredRef.current : arrivalsRef.current,
-        start: "top 80%"
-      },
-      y: 60,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.6,
-      ease: "power3.out"
-    })
-
-      gsap.from(bannerRef.current, {
-    scrollTrigger: {
-      trigger: bannerRef.current,
-      start: "top 80%"
-    },
-    opacity: 0,
-    duration: 5,
-    ease: "power3.out"
-  });
-  }, {scope: containerRef})
 
   
-  
+  if (loading) {
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    </Layout>
+  );
+}
+
 
   return (
     <Layout>
-      <div ref={containerRef}>
-              {/* Hero Section */}
-      <section className="relative h-[70vh] min-h-[500px] overflow-hidden">
-        <div ref={heroRef} className="absolute inset-0">
-          {images.map((src, i)=>(
+      {/* Hero Section */}
+      <div className="bg-[rgb(186,123,91)]/90">
+      <section ref={heroRef} className="relative h-[70vh] min-h-[500px] overflow-hidden">
+        {/* Image Stack */}
+        <div className="absolute inset-0">
+          {images.map((src, i) => (
             <img
-            key={i}
-            src={src}
-            className="hero-image absolute inset-0 w-full h-full object-cover"
-            style={{ opacity: i === 0 ? 1 : 0 }}
+              key={i}
+              ref={el => imageRefs.current[i] = el}
+              src={src}
+              alt={`Hero ${i + 1}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ 
+                opacity: i === 0 ? 1 : 0,
+                transform: 'scale(1)'
+              }}
             />
           ))}
-        
-          <div className="absolute inset-0 w-full h-full object-cover" />
+          
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/40" />
         </div>
         
-        <div className="relative container mx-auto px-4 h-full flex items-center">
-          <div className="max-w-xl hero-content">
-            <p ref={titleRef} className="text-sm text-background/90 uppercase tracking-[0.3em] mb-4 hero-title">
-              New Collection 2024
-            </p>
-            <h1 ref={titleRef} className="font-display text-5xl md:text-6xl lg:text-7xl text-background font-medium leading-tight">
-              Timeless
-              <br />
-              Elegance
-            </h1>
-            <p ref={subTitleRef} className="mt-6 text-background/90 text-lg max-w-md hero-descriptions">
-              Discover our curated selection of luxury fashion pieces designed for the discerning individual.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4 hero-actions">
-              <Button asChild variant="secondary" size="xl">
-                <Link to="/products">Shop Collection</Link>
-              </Button>
-              <Button asChild variant="luxury-outline" size="xl" className="border-background text-background hover:bg-background hover:text-foreground">
-                <Link to="/products?category=women">Women's</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+        {/* Content */}
+        <div className="relative container mx-auto px-4 h-full flex items-center z-10">
+  <div className="max-w-xl">
+    <div>
+      <p ref={titleRef} className="text-sm text-white/90 uppercase tracking-[0.3em] mb-4">
+        {heroContent[currentHeroIndex].eyebrow}
+      </p>
+      <h1 ref={titleH1Ref} className="font-serif text-5xl md:text-6xl lg:text-7xl font-medium leading-tight"
+  style={{
+    background: 'linear-gradient(180deg, #FFFFFF 0%, #FFFFFF 50%, #A67358 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text'
+  }}>
+        <span className="block">{heroContent[currentHeroIndex].titleLine1}</span>
+        <span className="block">{heroContent[currentHeroIndex].titleLine2}</span>
+      </h1>
+    </div>
+    
+    <p ref={subtitleRef} className="mt-6 text-white/90 text-lg max-w-md">
+      {heroContent[currentHeroIndex].description}
+    </p>
+
+    <div className='w-full flex flex-row gap-2'>
+      <div ref={generalAction} className="mt-8 flex flex-wrap gap-4">
+      <Link 
+        to={`/products?category=${heroContent[currentHeroIndex].category}`}
+      className="px-4 py-4 bg-primary text-white font-medium rounded-lg  hover:scale-90 transition-all duration-75 ease-in-out"
+      >
+        {heroContent[currentHeroIndex].ctag}
+      </Link>
+    </div>
+    
+    <div ref={actionsRef} className="mt-8 flex flex-wrap gap-4 ">
+      <Link 
+        to={`/products?category=${heroContent[currentHeroIndex].category}`}
+        className="px-4 py-4 bg-white text-[#000000] border-1 border-black rounded-lg font-medium hover:scale-90 transition-all duration-75 ease-in-out"
+      >
+        {heroContent[currentHeroIndex].cta}
+      </Link>
+    </div>
+    </div>
+    
+  </div>
+</div>
+
+        {/* C-Curve Divider */}
+        {/* <div 
+          ref={curveRef}
+          className="absolute bottom-0 left-0 right-0 h-32 overflow-hidden pointer-events-none"
+        >
+          <svg 
+            className="absolute bottom-0 w-full h-full" 
+            viewBox="0 0 1440 120" 
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              d="M0,0 Q360,120 720,60 T1440,0 L1440,120 L0,120 Z" 
+              fill="rgb(17, 24, 39)"
+              className="drop-shadow-2xl"
+            />
+          </svg>
+        </div> */}
       </section>
 
       {/* Categories Section */}
@@ -233,9 +285,9 @@ const arrivalText = useRef<HTMLDivElement>(null);
           </div>
           
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {mockCategories.map((category) => (
+            {selectedCategories.map((category) => (
               <div className='category-card'>
-                <CategoryCard key={category.id} category={category}  />
+                <CategoryCard key={category._id} category={category}  />
               </div>
             ))}
           </div>

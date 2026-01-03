@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
-
-const navLinks = [
-  { name: 'Women', href: '/products?category=women' },
-  { name: 'Men', href: '/products?category=men' },
-  { name: 'Accessories', href: '/products?category=accessories' },
-  { name: 'Shoes', href: '/products?category=shoes' },
-];
+import { navLinks } from '@/constants';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
