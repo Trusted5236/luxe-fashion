@@ -175,6 +175,37 @@ export const deleteCategory = async (categoryId: string) => {
     return data;
 }
 
+export const editCategoryApi = async (categoryId: string, updates: { name?: string; image?: File }) => {
+    const token = getToken();
+    if (!token) {
+        throw new Error('No token found. Please login');
+    }
+
+    const formData = new FormData();
+    
+    if (updates.name) {
+        formData.append('name', updates.name);
+    }
+    if (updates.image) {
+        formData.append('image', updates.image);
+    }
+
+    const response = await fetch(`${BASE_URL}/categories/${categoryId}`, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to update category');
+    }
+    return data;
+}
+
 export const postProductApi = async (formData: FormData) => {
     const token = getToken();
     if (!token) {
@@ -418,6 +449,27 @@ export const captureOrderPaypal = async (orderId : string, paypalOrderId : strin
     const data = await response.json()
     if(!response.ok){
          throw new Error(data.message || 'Failed Fetch Cart');
+    }
+    return data
+}
+
+export const getAdminData = async (page : number, limit: number)=>{
+    const token = getToken()
+    if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/admin/stats?page=${page}&limit=${limit}`, { 
+        method : "GET",
+        headers : {
+            'Content-Type' : 'application/json',
+            'Authorization' : `Bearer ${token}`
+        },
+    })
+
+    const data = await response.json()
+    if(!response.ok){
+         throw new Error(data.message || 'Failed to get admin stats');
     }
     return data
 }

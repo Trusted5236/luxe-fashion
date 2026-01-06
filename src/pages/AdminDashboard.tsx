@@ -1,8 +1,9 @@
-import { Users, Package, DollarSign, Store, UserPlus, ShieldCheck, Trash2, FolderPlus } from 'lucide-react';
+import { Users, Package, DollarSign, Store, UserPlus, ShieldCheck, Trash2, FolderPlus, Edit } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { postCategory, fetchCategories, deleteCategory} from '@/services/api';
+import { postCategory, fetchCategories, deleteCategory, editCategoryApi, getAdminData} from '@/services/api';
 import { toast } from '@/hooks/use-toast';
+import { CategoryCard } from '@/components/categories';
 
 interface Category {
   name: string;
@@ -13,10 +14,15 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const [categories, setCategories] = useState([]);
   console.log('Categories:', categories);
-  
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+const [editCategory, setEditCategory] = useState<{ name?: string; image?: File | null }>({});
   const [activeTab, setActiveTab] = useState('categories');
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [newCategory, setNewCategory] = useState<Category>({ name: '', image: '' });
+  const [stats, setStats] = useState(null);
+  console.log("Stats:", stats)
+const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10
 
   const handleCreateCategory = async () => {
   if (!newCategory.name || !newCategory.image) return;
@@ -43,6 +49,14 @@ export default function AdminDashboard() {
           });
   }
 };
+
+useEffect(() => {
+    const loadData = async () => {
+        const data = await getAdminData(currentPage, limit); // Pass page
+        setStats(data);
+    };
+    loadData();
+}, [currentPage]);
 
 
     const loadCategories = async () => {
@@ -77,6 +91,42 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleEditCategory = async (categoryId: string) => {
+  try {
+    const updates: any = {};
+    if (editCategory.name) updates.name = editCategory.name;
+    if (editCategory.image) updates.image = editCategory.image;
+
+    // Check if there are updates
+    if (Object.keys(updates).length === 0) {
+      toast({
+        title: 'No Changes',
+        description: 'Please provide at least one field to update',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    await editCategoryApi(categoryId, updates);
+    
+    toast({
+      title: 'Update Successful',
+      description: 'Category updated successfully',
+    });
+    
+    setEditingCategoryId(null);
+    setEditCategory({});
+    loadCategories();
+  } catch (error) {
+    console.error('Error updating category:', error);
+    toast({
+      title: 'Update Failed',
+      description: error instanceof Error ? error.message : 'An unexpected error occurred',
+      variant: 'destructive',
+    });
+  }
+};
+
   // Mock data
   const mockUsers = [
     { id: '1', name: 'John Doe', email: 'john@example.com', role: 'user', createdAt: '2024-01-15' },
@@ -92,6 +142,17 @@ export default function AdminDashboard() {
     { id: '2', name: 'Leather Wallet', sellerName: 'Luxury Store', price: 89, sellerId: '3' },
   ];
 
+  if (!stats) {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Loading Admin Data...</p>
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -100,10 +161,10 @@ export default function AdminDashboard() {
         {/* Stats */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { title: 'Total Users', value: mockUsers.length, icon: Users },
-            { title: 'Sellers', value: mockSellers.length, icon: Store },
-            { title: 'Products', value: mockProducts.length, icon: Package },
-            { title: 'Revenue', value: '$45,231', icon: DollarSign },
+            { title: 'Total Users', value: stats.users.total, icon: Users },
+            { title: 'Sellers', value: stats.sellers.total, icon: Store },
+            { title: 'Products', value: stats.products.total, icon: Package },
+            { title: 'Revenue', value: `$${stats.revenue}`, icon: DollarSign },
           ].map((stat) => (
             <div key={stat.title} className="bg-white rounded-lg shadow-sm border border-border p-6">
               <div className="flex flex-row items-center justify-between pb-2">
@@ -196,6 +257,53 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
+                {editingCategoryId && (
+  <div className="bg-blue-50 rounded-lg p-6 mb-6 border border-blue-200">
+    <h3 className="font-display text-lg font-medium mb-4">Edit Category</h3>
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-label mb-2">
+          Category Name
+        </label>
+        <input
+          type="text"
+          value={editCategory.name || ''}
+          onChange={(e) => setEditCategory({ ...editCategory, name: e.target.value })}
+          className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-label mb-2">
+          New Category Image (optional)
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setEditCategory({ ...editCategory, image: e.target.files?.[0] || null })}
+          className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+        />
+      </div>
+      <div className="flex gap-3">
+        <button
+          onClick={() => handleEditCategory(editingCategoryId)}
+          className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          Update Category
+        </button>
+        <button
+          onClick={() => {
+            setEditingCategoryId(null);
+            setEditCategory({});
+          }}
+          className="px-4 py-2 bg-secondary text-body text-sm font-medium rounded-lg hover:bg-secondary/80 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
                 {/* Categories Grid */}
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {categories.map((category) => (
@@ -213,12 +321,23 @@ export default function AdminDashboard() {
                             <h3 className="font-display font-medium">{category.name}</h3>
                             <p className="text-sm text-label mt-1">ID: {category._id}</p>
                           </div>
-                          <button
+                          <div className='flex flex-row gap-2'>
+                            <button
                             onClick={() => handleDeleteCategory(category._id)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           >
                             <Trash2 className="h-5 w-5" />
                           </button>
+                          <button
+  onClick={() => {
+    setEditingCategoryId(category._id);
+    setEditCategory({ name: category.name });
+  }}
+  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+>
+  <Edit className="h-5 w-5" />
+</button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -249,11 +368,11 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockUsers.map((u) => (
+                      {stats.users.list.map((u) => (
                         <tr key={u.id} className="border-b border-border">
                           <td className="py-3 px-2 font-medium">{u.name}</td>
                           <td className="py-3 px-2 text-body">{u.email}</td>
-                          <td className="py-3 px-2 text-body">{u.createdAt}</td>
+                          <td className="py-3 px-2 text-body">{new Date(u.createdAt).toLocaleDateString()}</td>
                           <td className="py-3 px-2 text-right">
                             <button className="px-3 py-1 text-sm text-body hover:bg-secondary/50 rounded">View</button>
                           </td>
@@ -262,7 +381,31 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+
+                 <div className="flex items-center justify-between mt-6 px-4">
+      <button 
+        onClick={() => setCurrentPage(p => p - 1)} 
+        disabled={currentPage === 1}
+        className="px-4 py-2 bg-secondary text-body rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+      
+      <span className="text-sm text-body">
+        Page {currentPage} of {stats?.pagination?.totalPages || 1}
+      </span>
+      
+      <button 
+        onClick={() => setCurrentPage(p => p + 1)}
+        disabled={currentPage >= (stats?.pagination?.totalPages || 1)}
+        className="px-4 py-2 bg-secondary text-body rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+  </div>
               </div>
+
+              
             )}
 
             {/* Sellers Tab */}
@@ -286,11 +429,11 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockSellers.map((s) => (
+                      {stats.sellers.list.map((s) => (
                         <tr key={s.id} className="border-b border-border">
                           <td className="py-3 px-2 font-medium">{s.name}</td>
                           <td className="py-3 px-2 text-body">{s.email}</td>
-                          <td className="py-3 px-2">{s.products}</td>
+                          <td className="py-3 px-2">{s.productCount}</td>
                           <td className="py-3 px-2 text-right space-x-2">
                             <button className="p-2 hover:bg-secondary/50 rounded">
                               <ShieldCheck className="h-4 w-4" />
@@ -304,6 +447,28 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+
+                <div className="flex items-center justify-between mt-6 px-4">
+      <button 
+        onClick={() => setCurrentPage(p => p - 1)} 
+        disabled={currentPage === 1}
+        className="px-4 py-2 bg-secondary text-body rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+      
+      <span className="text-sm text-body">
+        Page {currentPage} of {stats?.pagination?.totalPages || 1}
+      </span>
+      
+      <button 
+        onClick={() => setCurrentPage(p => p + 1)}
+        disabled={currentPage >= (stats?.pagination?.totalPages || 1)}
+        className="px-4 py-2 bg-secondary text-body rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+  </div>
               </div>
             )}
 
@@ -317,16 +482,18 @@ export default function AdminDashboard() {
                       <tr className="border-b border-border">
                         <th className="text-left py-3 px-2 text-sm font-medium text-label">Product</th>
                         <th className="text-left py-3 px-2 text-sm font-medium text-label">Seller</th>
+                        <th className="text-left py-3 px-2 text-sm font-medium text-label">Bonus</th>
                         <th className="text-left py-3 px-2 text-sm font-medium text-label">Price</th>
                         <th className="text-right py-3 px-2 text-sm font-medium text-label">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {mockProducts.map((p) => (
+                      {stats.products.list.map((p) => (
                         <tr key={p.id} className="border-b border-border">
-                          <td className="py-3 px-2 font-medium">{p.name}</td>
+                          <td className="py-3 px-2 font-medium">{p.title}</td>
                           <td className="py-3 px-2 text-body">{p.sellerName}</td>
                           <td className="py-3 px-2">${p.price}</td>
+                          <td className="py-3 px-2">${p.bonus}</td>
                           <td className="py-3 px-2 text-right space-x-2">
                             <button className="px-3 py-1 text-sm text-body hover:bg-secondary/50 rounded">View</button>
                             <button className="p-2 hover:bg-red-50 rounded text-red-600">
@@ -338,6 +505,28 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+
+                <div className="flex items-center justify-between mt-6 px-4">
+      <button 
+        onClick={() => setCurrentPage(p => p - 1)} 
+        disabled={currentPage === 1}
+        className="px-4 py-2 bg-secondary text-body rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+      
+      <span className="text-sm text-body">
+        Page {currentPage} of {stats?.pagination?.products?.totalPages || 1}
+      </span>
+      
+      <button 
+        onClick={() => setCurrentPage(p => p + 1)}
+        disabled={currentPage >= (stats?.pagination?.products?.totalPages || 1)}
+        className="px-4 py-2 bg-secondary text-body rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+  </div>
               </div>
             )}
           </div>
