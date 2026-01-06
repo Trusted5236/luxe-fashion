@@ -44,92 +44,90 @@ export default function Products() {
   const [productDetails, setProductDetails] = useState(null); 
 
   const loadCategories = async () => {
-        try {
-          const fetchedCategories = await fetchCategories();
-          setCategories(fetchedCategories);
-        } catch (error) {
-          console.error('Error fetching categories:', error);
-        }
-      };
-  
-    useEffect(() => {
-      loadCategories();
-    }, []);
-
-
-useEffect(() => {
-  const loadProducts = async () => {
-    setLoading(true);
     try {
-      const data = await fetchProducts(
-        selectedCategories[0], 
-        searchParams.get('search') || '',
-        currentPage,
-        perPage
-      );
-      
-      const mappedProducts = data.products.map(p => ({
-        id: p._id,
-        sellerName: p.sellerName,
-        name: p.title,
-        price: p.price,
-        images: p.images,
-        image: p.displayImage,
-        category: selectedCategories[0] || '',
-        rating: p.reviews.averageRating,
-        reviews: p.reviews.numberOfReviews,
-        originalPrice: p.bonus,
-      }));
-      
-      setProducts(mappedProducts);
-      setTotalPages(data.totalPages); // Store total pages
+      const fetchedCategories = await fetchCategories();
+      setCategories(fetchedCategories);
     } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching categories:', error);
     }
   };
 
-  loadProducts();
-}, [selectedCategories, searchParams, currentPage]);
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
- const filteredProducts = useMemo(() => {
-  let productList = [...productsData];
+  // NEW: Initialize selected categories from URL parameter
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl && !selectedCategories.includes(categoryFromUrl)) {
+      setSelectedCategories([categoryFromUrl]);
+    }
+  }, [searchParams]);
 
-  
-  // Keep price range filtering
-  if (selectedPriceRanges.length > 0) {
-    productList = productList.filter(p => {
-      return selectedPriceRanges.some(range => {
-        if (range === '0-100') return p.price < 100;
-        if (range === '100-250') return p.price >= 100 && p.price < 250;
-        if (range === '250-500') return p.price >= 250 && p.price < 500;
-        if (range === '500+') return p.price >= 500;
-        return true;
+  useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchProducts(
+          selectedCategories[0], 
+          searchParams.get('search') || '',
+          currentPage,
+          perPage
+        );
+        
+        const mappedProducts = data.products.map(p => ({
+          id: p._id,
+          sellerName: p.sellerName,
+          name: p.title,
+          price: p.price,
+          images: p.images,
+          image: p.displayImage,
+          category: selectedCategories[0] || '',
+          rating: p.reviews.averageRating,
+          reviews: p.reviews.numberOfReviews,
+          originalPrice: p.bonus,
+        }));
+        
+        setProducts(mappedProducts);
+        setTotalPages(data.totalPages);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [selectedCategories, searchParams, currentPage]);
+
+  const filteredProducts = useMemo(() => {
+    let productList = [...productsData];
+
+    // Keep price range filtering
+    if (selectedPriceRanges.length > 0) {
+      productList = productList.filter(p => {
+        return selectedPriceRanges.some(range => {
+          if (range === '0-100') return p.price < 100;
+          if (range === '100-250') return p.price >= 100 && p.price < 250;
+          if (range === '250-500') return p.price >= 250 && p.price < 500;
+          if (range === '500+') return p.price >= 500;
+          return true;
+        });
       });
-    });
-  }
+    }
 
-  // Keep sorting
-  switch (sortBy) {
-    case 'price-low':
-      productList.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-high':
-      productList.sort((a, b) => b.price - a.price);
-      break;
-  }
+    // Keep sorting
+    switch (sortBy) {
+      case 'price-low':
+        productList.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        productList.sort((a, b) => b.price - a.price);
+        break;
+    }
 
-  return productList;
-}, [productsData, selectedPriceRanges, sortBy]);
-
-  // const toggleCategory = (category: string) => {
-  //   setSelectedCategories(prev =>
-  //     prev.includes(category)
-  //       ? prev.filter(c => c !== category)
-  //       : [...prev, category]
-  //   );
-  // };
+    return productList;
+  }, [productsData, selectedPriceRanges, sortBy]);
 
   const togglePriceRange = (range: string) => {
     setSelectedPriceRanges(prev =>
@@ -143,6 +141,26 @@ useEffect(() => {
     setSelectedCategories([]);
     setSelectedPriceRanges([]);
     setSortBy('featured');
+    // Clear URL params too
+    setSearchParams({});
+  };
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+    setCurrentPage(1);
+    
+    // Update URL parameter
+    const newParams = new URLSearchParams(searchParams);
+    if (selectedCategories.includes(category)) {
+      newParams.delete('category');
+    } else {
+      newParams.set('category', category);
+    }
+    setSearchParams(newParams);
   };
 
   const FilterContent = () => (
@@ -152,17 +170,17 @@ useEffect(() => {
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Category</h3>
         <div className="space-y-3">
           {categories.map(category => (
-  <div key={category._id} className="flex items-center gap-3">
-    <Checkbox
-      id={`cat-${category.name}`}
-      checked={selectedCategories.includes(category.name)}
-      onCheckedChange={() => toggleCategory(category.name)}
-    />
-    <Label htmlFor={`cat-${category.name}`}>
-      {category.name}
-    </Label>
-  </div>
-))}
+            <div key={category._id} className="flex items-center gap-3">
+              <Checkbox
+                id={`cat-${category.name}`}
+                checked={selectedCategories.includes(category.name)}
+                onCheckedChange={() => toggleCategory(category.name)}
+              />
+              <Label htmlFor={`cat-${category.name}`}>
+                {category.name}
+              </Label>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -193,17 +211,6 @@ useEffect(() => {
       )}
     </div>
   );
-
-  const toggleCategory = (category: string) => {
-  setSelectedCategories(prev =>
-    prev.includes(category)
-      ? prev.filter(c => c !== category)
-      : [...prev, category]
-  );
-  setCurrentPage(1); // Reset to page 1
-};
-
-
 
   return (
     <Layout>
@@ -283,57 +290,57 @@ useEffect(() => {
             </div>
           </aside>
 
-        {/* Products */}
-<div className="flex-1">
-  {loading ? (
-    <div className="text-center py-16">Loading products...</div>
-  ) : filteredProducts.length > 0 ? (
-    <>
-      <ProductGrid products={filteredProducts} columns={gridCols} />
-      
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-8">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          
-          <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                onClick={() => setCurrentPage(page)}
-                className="w-10"
-              >
-                {page}
-              </Button>
-            ))}
+          {/* Products */}
+          <div className="flex-1">
+            {loading ? (
+              <div className="text-center py-16">Loading products...</div>
+            ) : filteredProducts.length > 0 ? (
+              <>
+                <ProductGrid products={filteredProducts} columns={gridCols} />
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 mt-8">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          onClick={() => setCurrentPage(page)}
+                          className="w-10"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-lg text-body">No products found</p>
+                <Button variant="outline" onClick={clearFilters} className="mt-4">
+                  Clear Filters
+                </Button>
+              </div>
+            )}
           </div>
-          
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      )}
-    </>
-  ) : (
-    <div className="text-center py-16">
-      <p className="text-lg text-body">No products found</p>
-      <Button variant="outline" onClick={clearFilters} className="mt-4">
-        Clear Filters
-      </Button>
-    </div>
-  )}
-</div>
         </div>
       </div>
     </Layout>

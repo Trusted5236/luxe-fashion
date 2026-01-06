@@ -10,7 +10,7 @@ interface CategoryCardProps {
 export function CategoryCard({ category, className }: CategoryCardProps) {
   return (
     <Link
-      to={`/products?category=${category.slug}`}
+      to={`/products?category=${category.name}`}
       className={cn(
         "group relative block aspect-[3/4] overflow-hidden bg-muted",
         className

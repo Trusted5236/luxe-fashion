@@ -12,7 +12,7 @@ export const heroContent = [
     titleLine1: 'Graceful',
     titleLine2: 'Confidence',
     description:
-      'Luxury womenswear crafted to empower every moment, from everyday elegance to statement occasions.',
+      'Luxury womens wear crafted to empower every moment, from everyday elegance to statement occasions.',
     cta: 'Women',
     ctag : "Shop Collection",
     image: "https://i.pinimg.com/1200x/fe/87/2d/fe872d59090907b1b66bc256a28c8964.jpg"

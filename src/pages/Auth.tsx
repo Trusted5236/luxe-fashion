@@ -173,13 +173,13 @@ export default function Auth() {
             </div>
 
             {/* Demo credentials */}
-            <div className="mt-8 p-4 bg-muted rounded text-sm">
+            {/* <div className="mt-8 p-4 bg-muted rounded text-sm">
               <p className="font-medium mb-2">Demo Accounts:</p>
               <p className="text-body">Admin: admin@luxefashion.com</p>
               <p className="text-body">Seller: seller@maisonluxe.com</p>
               <p className="text-body">User: customer@email.com</p>
               <p className="text-label mt-1">(any password works)</p>
-            </div>
+            </div> */}
           </div>
         </div>
 

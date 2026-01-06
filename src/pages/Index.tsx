@@ -14,6 +14,7 @@ import { fetchCategories} from '@/services/api';
 import { Category } from '@/types';
 import { heroContent } from '@/constants';
 console.log(heroContent)
+import { fetchProducts } from '@/services/api';
 
 
 gsap.registerPlugin(ScrollTrigger)
@@ -38,8 +39,7 @@ const features = [
 const images = heroContent.map(content => content.image);
 
 export default function Index() {
-  const featuredProducts = mockProducts.slice(0, 4);
-  const newArrivals = mockProducts.slice(4, 8);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const subTitleRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
@@ -61,9 +61,47 @@ const heroRef = useRef(null);
   const imageRefs = useRef([]);
   const titleH1Ref = useRef(null);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [newArrivals, setArrivals] = useState([]);
 
 
+  useEffect(() => {
+  const loadFeatured = async () => {
+    try {
+      const data = await fetchProducts('', '', 1, 8);
+      const mappedProducts = data.products.map(p => ({
+        id: p._id,
+        name: p.title,
+        price: p.price,
+        image: p.displayImage,
+        // ... rest of mapping
+      }));
+      setFeaturedProducts(mappedProducts);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  loadFeatured();
+}, []);
 
+  useEffect(() => {
+  const loadFeatured = async () => {
+    try {
+      const data = await fetchProducts('', '', 1, 4);
+      const mappedProducts = data.products.map(p => ({
+        id: p._id,
+        name: p.title,
+        price: p.price,
+        image: p.displayImage,
+        // ... rest of mapping
+      }));
+      setArrivals(mappedProducts);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  loadFeatured();
+}, []);
 
   useEffect(() => {
   if (loading) return;
@@ -73,6 +111,7 @@ const heroRef = useRef(null);
     // Initial setup
     gsap.set(imageRefs.current.slice(1), { opacity: 0 });
     
+    
     // Function to animate content change
     const animateContentChange = (index) => {
       const tl = gsap.timeline();
@@ -81,7 +120,7 @@ const heroRef = useRef(null);
       tl.to([titleRef.current, titleH1Ref.current, subtitleRef.current, actionsRef.current, generalAction.current], {
         opacity: 0,
         y: -30,
-        duration: 0.6,
+        duration: 1,
         ease: "power2.in",
         stagger: 0.05
       })
@@ -95,7 +134,7 @@ const heroRef = useRef(null);
       .to([titleRef.current, titleH1Ref.current, subtitleRef.current, actionsRef.current, generalAction.current], {
         opacity: 1,
         y: 0,
-        duration: 0.8,
+        duration: 1.5,
         ease: "power3.out",
         stagger: 0.1
       });
@@ -134,7 +173,7 @@ const heroRef = useRef(null);
       y: 100,
       opacity: 0,
       stagger: 0.15,
-      duration: 1,
+      duration: 2,
       ease: "elastic.out(1, 0.5)",
       delay: 0.5
     });
@@ -150,6 +189,133 @@ const heroRef = useRef(null);
       });
     }
   }, heroRef);
+
+  return () => ctx.revert();
+}, [loading]);
+
+// Add this useEffect after your existing ones
+useEffect(() => {
+  if (loading) return;
+
+  const ctx = gsap.context(() => {
+    
+    // Categories Section - Cards fly in from bottom with stagger
+    gsap.from('.category-card', {
+      scrollTrigger: {
+        trigger: categoriesRef.current,
+        start: 'top 80%',
+        toggleActions: 'play none none reverse'
+      },
+      y: 100,
+      opacity: 0,
+      scale: 0.8,
+      duration: 2,
+      stagger: 0.15,
+      ease: 'back.out(1.7)'
+    });
+
+    gsap.from(categoryText.current, {
+      scrollTrigger: {
+        trigger: categoriesRef.current,
+        start: 'top 85%',
+      },
+      y: 50,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out'
+    });
+
+    // Featured Products - Fade up with blur effect
+    gsap.from(featuredText.current, {
+      scrollTrigger: {
+        trigger: featuredRef.current,
+        start: 'top 80%',
+      },
+      y: 60,
+      opacity: 0,
+      filter: 'blur(10px)',
+      duration: 1,
+      ease: 'power3.out'
+    });
+
+    gsap.from(featuredRef.current.querySelectorAll('.product-card'), {
+      scrollTrigger: {
+        trigger: featuredRef.current,
+        start: 'top 70%',
+      },
+      y: 80,
+      opacity: 0,
+      scale: 0.9,
+      duration: 2.5,
+      stagger: 0.1,
+      ease: 'power2.out'
+    });
+
+    // Banner - Zoom in with overlay fade
+    gsap.from(bannerRef.current.querySelector('img'), {
+      scrollTrigger: {
+        trigger: bannerRef.current,
+        start: 'top 80%',
+      },
+      scale: 1.3,
+      duration: 3,
+      ease: 'power2.out'
+    });
+
+    gsap.from(bannerRef.current.querySelectorAll('p, h2, button'), {
+      scrollTrigger: {
+        trigger: bannerRef.current,
+        start: 'top 70%',
+      },
+      y: 50,
+      opacity: 0,
+      duration: 1,
+      stagger: 0.2,
+      ease: 'power3.out'
+    });
+
+    // New Arrivals - Slide in from sides alternating
+    gsap.from(arrivalText.current, {
+      scrollTrigger: {
+        trigger: arrivalsRef.current,
+        start: 'top 80%',
+      },
+      x: -100,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out'
+    });
+
+    const arrivalCards = arrivalsRef.current.querySelectorAll('.product-card');
+    arrivalCards.forEach((card, i) => {
+      gsap.from(card, {
+        scrollTrigger: {
+          trigger: arrivalsRef.current,
+          start: 'top 70%',
+        },
+        x: i % 2 === 0 ? -100 : 100,
+        opacity: 0,
+        rotation: i % 2 === 0 ? -5 : 5,
+        duration: 0.8,
+        delay: i * 0.5,
+        ease: 'back.out(1.2)'
+      });
+    });
+
+    // Features - Pop in with bounce
+    gsap.from(featuresRef.current.querySelectorAll('.grid > div'), {
+      scrollTrigger: {
+        trigger: featuresRef.current,
+        start: 'top 85%',
+      },
+      scale: 0,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.15,
+      ease: 'back.out(2)'
+    });
+
+  });
 
   return () => ctx.revert();
 }, [loading]);

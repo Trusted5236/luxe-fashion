@@ -59,15 +59,7 @@ export default function ProductDetail() {
     fetchProductDetails();
   }, [id]);
 
-    if (loading) {
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    </Layout>
-  );
-}
+
 
 
   if (!product) {
@@ -89,12 +81,19 @@ export default function ProductDetail() {
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
-      return;
-    }
     const color = selectedColor || product.colors[0]?.name || '';
     addItem(product, selectedSize, color, quantity);
   };
+
+      if (loading) {
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    </Layout>
+  );
+}
 
   return (
     <Layout>
@@ -204,7 +203,7 @@ export default function ProductDetail() {
             )}
 
             {/* Size Selection */}
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-semibold uppercase tracking-wider">
                   Size: {selectedSize || 'Select'}
@@ -227,10 +226,10 @@ export default function ProductDetail() {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             {/* Quantity */}
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <p className="text-sm font-semibold uppercase tracking-wider mb-3">Quantity</p>
               <div className="inline-flex items-center border border-border">
                 <button
@@ -247,18 +246,17 @@ export default function ProductDetail() {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
-            </div>
+            </div> */}
 
             {/* Actions */}
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <div className="w-full h-auto mt-8 flex flex-col sm:flex-row gap-3">
               <Button
                 variant="luxury"
                 size="xl"
-                className="flex-1"
+                className="lg:flex-1 md:flex-1"
                 onClick={handleAddToCart}
-                disabled={!selectedSize}
               >
-                {!selectedSize ? 'Select a Size' : 'Add to Cart'}
+                {'Add to Cart'}
               </Button>
               <Button variant="luxury-outline" size="xl">
                 <Heart className="h-5 w-5" />
@@ -269,11 +267,11 @@ export default function ProductDetail() {
             <div className="mt-10 pt-8 border-t border-border space-y-4">
               <div className="flex items-center gap-3 text-sm">
                 <Truck className="h-5 w-5 text-primary" />
-                <span>Complimentary shipping on orders over $200</span>
+                <span>Shipping is free</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <RefreshCw className="h-5 w-5 text-primary" />
-                <span>30-day easy returns</span>
+                <span>Warranty available</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Shield className="h-5 w-5 text-primary" />

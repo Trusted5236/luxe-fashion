@@ -77,6 +77,10 @@
     --sidebar-ring: 20 40% 54%;
   }
 
+body {
+  overflow-x: hidden;
+}
+
   .dark {
     --background: 0 0% 8%;
     --foreground: 36 30% 96%;

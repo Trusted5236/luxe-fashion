@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { postCategory, fetchCategories, deleteCategory, editCategoryApi, getAdminData} from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import { CategoryCard } from '@/components/categories';
+import { ProductModal } from '@/components/ProductModal';
 
 interface Category {
   name: string;
@@ -22,6 +23,8 @@ const [editCategory, setEditCategory] = useState<{ name?: string; image?: File |
   const [stats, setStats] = useState(null);
   console.log("Stats:", stats)
 const [currentPage, setCurrentPage] = useState(1);
+const [selectedProduct, setSelectedProduct] = useState(null);
+const [isModalOpen, setIsModalOpen] = useState(false);
   const limit = 10
 
   const handleCreateCategory = async () => {
@@ -57,6 +60,7 @@ useEffect(() => {
     };
     loadData();
 }, [currentPage]);
+
 
 
     const loadCategories = async () => {
@@ -495,7 +499,10 @@ useEffect(() => {
                           <td className="py-3 px-2">${p.price}</td>
                           <td className="py-3 px-2">${p.bonus}</td>
                           <td className="py-3 px-2 text-right space-x-2">
-                            <button className="px-3 py-1 text-sm text-body hover:bg-secondary/50 rounded">View</button>
+                            <button onClick={() => {
+          setSelectedProduct(p);
+          setIsModalOpen(true);
+        }} className="px-3 py-1 text-sm text-body hover:bg-secondary/50 rounded">View</button>
                             <button className="p-2 hover:bg-red-50 rounded text-red-600">
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -532,6 +539,14 @@ useEffect(() => {
           </div>
         </div>
       </div>
+
+      <ProductModal
+  product={selectedProduct}
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+/>
     </div>
+
+    
   );
 }
