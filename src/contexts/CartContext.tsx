@@ -41,7 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       const mappedItems: CartItem[] = cartData.products.map((item: any) => ({
         product: {
-          id: item.product,
+          id: typeof item.product === 'string' ? item.product : item.product._id,
           name: item.title,
           price: item.price,
           images: [item.image],
@@ -72,9 +72,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   console.log('Item count:', itemCount)
 }, [items])
 
-  useEffect(()=>{
-    refreshData()
-  }, [])
+  useEffect(() => {
+  refreshData();
+
+  const handleAuthChange = () => {
+    refreshData();
+  };
+  
+  window.addEventListener('auth-change', handleAuthChange);
+  
+  return () => {
+    window.removeEventListener('auth-change', handleAuthChange);
+  };
+}, []);
 
 
   const addItem = async (product: Product, size?: string, color?: string, quantity = 1) => {
@@ -82,7 +92,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const token = localStorage.getItem("accessToken")
     
-      if(!token) return
+        if (!token) {
+  window.location.href = '/auth';
+  return;
+}
 
       await addToCart(product.id, quantity)
       await refreshData()
@@ -147,10 +160,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Find the current item to determine if we're increasing or decreasing
     const currentItem = items.find(
-      item => item.product.id === productId && 
-              (!size || item.size === size) && 
-              (!color || item.color === color)
-    );
+  item => item.product.id === productId && 
+          (!size || item.size === size) && 
+          (!color || item.color === color)
+);
 
     if (!currentItem) {
       setLoading(false);

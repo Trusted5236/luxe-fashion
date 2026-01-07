@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Calling loginApi...');
       const loginResponse = await loginApi({email, password});
       await loadUserProfile();
+      window.dispatchEvent(new Event('auth-change'));
       
       console.log('Login successful');
       setIsLoading(false);
@@ -74,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       console.log('Loading user profile...');
       await loadUserProfile();
+      window.dispatchEvent(new Event('auth-change'));
       
       console.log('Signup successful');
       setIsLoading(false);

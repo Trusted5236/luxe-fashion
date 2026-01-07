@@ -378,7 +378,7 @@ useEffect(() => {
         
         {/* Content */}
         <div className="relative container mx-auto px-4 h-full flex items-center z-10">
-  <div className="max-w-xl">
+  <div className="w-full px-2 max-w-xl">
     <div>
       <p ref={titleRef} className="text-sm text-white/90 uppercase tracking-[0.3em] mb-4">
         {heroContent[currentHeroIndex].eyebrow}
@@ -399,8 +399,8 @@ useEffect(() => {
       {heroContent[currentHeroIndex].description}
     </p>
 
-    <div className='w-full flex flex-row gap-2'>
-      <div ref={generalAction} className="mt-8 flex flex-wrap gap-4">
+    <div className='w-full flex flex-col sm:flex-row gap-2'>
+      <div ref={generalAction} className=" flex flex-wrap gap-4">
       <Link 
         to={`/products?category=${heroContent[currentHeroIndex].category}`}
       className="px-4 py-4 bg-primary text-white font-medium rounded-lg  hover:scale-90 transition-all duration-75 ease-in-out"
@@ -409,7 +409,7 @@ useEffect(() => {
       </Link>
     </div>
     
-    <div ref={actionsRef} className="mt-8 flex flex-wrap gap-4 ">
+    <div ref={actionsRef} className=" flex flex-wrap gap-4 ">
       <Link 
         to={`/products?category=${heroContent[currentHeroIndex].category}`}
         className="px-4 py-4 bg-white text-[#000000] border-1 border-black rounded-lg font-medium hover:scale-90 transition-all duration-75 ease-in-out"
