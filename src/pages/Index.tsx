@@ -208,7 +208,6 @@ useEffect(() => {
       },
       y: 100,
       opacity: 0,
-      scale: 0.8,
       duration: 2,
       stagger: 0.15,
       ease: 'back.out(1.7)'
@@ -293,9 +292,8 @@ useEffect(() => {
           trigger: arrivalsRef.current,
           start: 'top 70%',
         },
-        x: i % 2 === 0 ? -100 : 100,
+        y : 50,
         opacity: 0,
-        rotation: i % 2 === 0 ? -5 : 5,
         duration: 0.8,
         delay: i * 0.5,
         ease: 'back.out(1.2)'
@@ -308,7 +306,7 @@ useEffect(() => {
         trigger: featuresRef.current,
         start: 'top 85%',
       },
-      scale: 0,
+      y: 30, 
       opacity: 0,
       duration: 0.6,
       stagger: 0.15,
