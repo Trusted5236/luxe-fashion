@@ -97,39 +97,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
 
   const loadUserProfile = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      console.log('Token in loadUserProfile:', !!token);
+  try {
+    const token = localStorage.getItem('accessToken');
+    console.log('🔑 Loading profile with token:', !!token);
 
-      if(token){
-        console.log('Calling getProfile API...');
-        const profile = await getProfile();
-        
-        console.log('Profile received:', profile);
+    if (token) {
+      const profile = await getProfile();
+      console.log('👤 Profile received:', profile);
 
-        if (profile){
-            setUser(profile);
-            localStorage.setItem('luxe_user', JSON.stringify(profile));
-            console.log('User set in state and localStorage');
-        }else{
-          console.error('❌ Profile is null - token might be invalid');
-        throw new Error('Profile is null');
-        }
-             
+      if (profile) {
+        setUser(profile);
+        localStorage.setItem('luxe_user', JSON.stringify(profile));
+        console.log('✅ User successfully set');
       } else {
-        console.log('No token found in loadUserProfile');
+        throw new Error('Profile is null');
       }
-      
-    } catch (error: any) {
-      console.error('Error details:', error);
-      console.error('Error message:', error.message);
-      console.error('Error response:', error.response?.data);
-      
+    }
+  } catch (error: any) {
+    console.error('❌ Profile load error:', error.message);
+    // Only clear if it's an auth error, not a network error
+    if (error.message.includes('401') || error.message.includes('token')) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('luxe_user');
       setUser(null);
     }
   }
+};
 
   const logout = () => {
     console.log('===== LOGOUT =====');

@@ -75,10 +75,6 @@ useEffect(() => {
   const token = urlParams.get('token');
   const error = urlParams.get('error');
   
-  console.log('🔍 URL Params:', window.location.search);
-  console.log('🔍 Token from URL:', token);
-  console.log('🔍 Error from URL:', error);
-  
   if (error) {
     toast({
       title: 'Authentication Failed',
@@ -92,24 +88,19 @@ useEffect(() => {
   if (token) {
     console.log('✅ Token found, storing...');
     setToken(token);
-    console.log('📦 Token stored:', localStorage.getItem('accessToken'));
     
-    // Clean URL first
+    // Clean URL
     window.history.replaceState({}, '', '/');
     
-    // Then check auth with delay
-    setTimeout(async () => {
-      console.log('⏳ Calling checkAuth...');
-      await checkAuth();
-      console.log('✅ checkAuth completed');
-      
+    // Force checkAuth immediately - remove the setTimeout
+    checkAuth().then(() => {
       toast({
         title: 'Welcome',
         description: 'Successfully signed in with Google',
       });
-    }, 500);
+    });
   }
-}, [checkAuth]);
+}, []); // Remove checkAuth from dependencies to prevent loops
 
   useEffect(() => {
   const loadFeatured = async () => {
