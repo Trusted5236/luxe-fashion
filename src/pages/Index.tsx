@@ -70,20 +70,28 @@ const heroRef = useRef(null);
   const [newArrivals, setArrivals] = useState([]);
 
 useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    console.log('token', token)
-    if (token) {
-      localStorage.setItem('accessToken', token);
-      window.history.replaceState({}, '', '/');
-      checkAuth()
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  console.log('🔍 Token from URL:', token);
+  
+  if (token) {
+    console.log('✅ Token found, storing...');
+    localStorage.setItem('accessToken', token);
+    console.log('📦 Token stored:', localStorage.getItem('accessToken'));
+    
+    window.history.replaceState({}, '', '/');
+    
+    // Make checkAuth async
+    checkAuth().then(() => {
+      console.log('✅ checkAuth completed');
       toast({
         title: 'Welcome',
         description: 'Successfully signed in with Google',
       });
       navigate('/');
-    }
-  }, []);
+    });
+  }
+}, []);
 
   useEffect(() => {
   const loadFeatured = async () => {
