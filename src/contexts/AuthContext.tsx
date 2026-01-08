@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
-import { signup as signupAPI, getProfile, loginApi, googleAuth} from '@/services/api';
+import { signup as signupAPI, getProfile, loginApi, googleAuth, setToken} from '@/services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -9,6 +9,7 @@ interface AuthContextType {
   signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: ()=> void,
   checkAuth: () => Promise<void>,
+  handleGoogleCallback: (token: string) => Promise<boolean>,
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -94,6 +95,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     googleAuth();
   }
 
+  const handleGoogleCallback = async (token : string)=>{
+    try {
+      setToken(token)
+      await loadUserProfile()
+      return true
+    } catch (error) {
+      console.log('auth failed', error)
+      return false
+    }
+  }
+
   const loadUserProfile = async () => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -156,6 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signup, 
       loginWithGoogle,
       logout,
+      handleGoogleCallback,
       isAuthenticated: !!user,
       checkAuth
     }}>
