@@ -76,15 +76,25 @@ useEffect(() => {
   console.log('🔍 Token from URL:', token);
   
   if(token){
-    handleGoogleCallback(token).then((sucess)=>{
-     if(sucess){
-       toast({
-        title: 'Welcome',
-        description: 'Successfully signed in with Google',
+    window.history.replaceState({}, '', '/');
+    
+    // Add 300ms delay before handling callback
+    setTimeout(() => {
+      handleGoogleCallback(token).then((success) => {
+        if(success){
+          toast({
+            title: 'Welcome',
+            description: 'Successfully signed in with Google',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: 'Failed to authenticate',
+            variant: 'destructive'
+          });
+        }
       });
-     }
-     window.history.replaceState({}, '', '/')
-    })
+    }, 300); // Add this delay
   }
 }, []);
 

@@ -95,17 +95,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     googleAuth();
   }
 
-  const handleGoogleCallback = async (token : string)=>{
-    try {
-      setToken(token)
-      await loadUserProfile()
-      return true
-    } catch (error) {
-      console.log('auth failed', error)
-      return false
-    }
+  const handleGoogleCallback = async (token: string): Promise<boolean> => {
+  try {
+    console.log('🔑 Setting token...');
+    setToken(token);
+    
+    // Add small delay to ensure token is persisted
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    console.log('👤 Loading profile...');
+    await loadUserProfile();
+    
+    console.log('✅ Google callback successful');
+    return true;
+  } catch (error) {
+    console.error('❌ Google callback failed:', error);
+    return false;
   }
-
+}
   const loadUserProfile = async () => {
     try {
       const token = localStorage.getItem('accessToken');
