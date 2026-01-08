@@ -83,6 +83,7 @@ useEffect(() => {
     window.history.replaceState({}, '', '/');
     
     // Make checkAuth async
+    setTimeout(() => {
     checkAuth().then(() => {
       console.log('✅ checkAuth completed');
       toast({
@@ -91,7 +92,8 @@ useEffect(() => {
       });
       navigate('/');
     });
-  }
+  }, 500); 
+}
 }, []);
 
   useEffect(() => {

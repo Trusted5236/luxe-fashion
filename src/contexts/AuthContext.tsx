@@ -104,12 +104,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const profile = await getProfile();
         
         console.log('Profile received:', profile);
-        console.log('Profile role:', profile?.role);
-        console.log('Profile type:', typeof profile);
-        
-        setUser(profile);
-        localStorage.setItem('luxe_user', JSON.stringify(profile));
-        console.log('User set in state and localStorage');
+
+        if (profile){
+            setUser(profile);
+            localStorage.setItem('luxe_user', JSON.stringify(profile));
+            console.log('User set in state and localStorage');
+        }else{
+          console.error('❌ Profile is null - token might be invalid');
+        throw new Error('Profile is null');
+        }
+             
       } else {
         console.log('No token found in loadUserProfile');
       }
