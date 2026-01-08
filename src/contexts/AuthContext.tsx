@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
-import { signup as signupAPI, getProfile, loginApi} from '@/services/api';
+import { signup as signupAPI, getProfile, loginApi, googleAuth} from '@/services/api';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: ()=> void,
+  checkAuth: () => Promise<void>,
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -87,6 +89,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const  loginWithGoogle = ()=>{
+    console.log('Initiating Google OAuth...');
+    googleAuth();
+  }
+
   const loadUserProfile = async () => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -125,10 +132,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("accessToken");
   };
 
+  const checkAuth = async () => {
+    console.log('Checking auth...');
+    await loadUserProfile();
+  };
+
   // Log whenever user changes
   useEffect(() => {
     console.log('User state changed:', user);
   }, [user]);
+
+  
 
   return (
     <AuthContext.Provider value={{ 
@@ -136,8 +150,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading, 
       login, 
       signup, 
+      loginWithGoogle,
       logout,
-      isAuthenticated: !!user 
+      isAuthenticated: !!user,
+      checkAuth
     }}>
       {children}
     </AuthContext.Provider>

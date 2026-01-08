@@ -11,6 +11,7 @@ console.log('Final BASE_URL:', BASE_URL);
 const getToken = (): string | null =>{
     return localStorage.getItem('accessToken')
 }
+
 const setToken = (token : string): void=>{
     localStorage.setItem("accessToken", token)
 }
@@ -472,5 +473,9 @@ export const getAdminData = async (page : number, limit: number)=>{
          throw new Error(data.message || 'Failed to get admin stats');
     }
     return data
+}
+
+export const googleAuth = async () =>{
+    window.location.href = `${BASE_URL}/authentication/google`
 }
 

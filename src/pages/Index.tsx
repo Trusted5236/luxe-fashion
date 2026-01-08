@@ -15,6 +15,9 @@ import { Category } from '@/types';
 import { heroContent } from '@/constants';
 console.log(heroContent)
 import { fetchProducts } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 
 gsap.registerPlugin(ScrollTrigger)
@@ -38,8 +41,10 @@ const features = [
 
 const images = heroContent.map(content => content.image);
 
-export default function Index() {
 
+export default function Index() {
+  const navigate = useNavigate()
+  const {checkAuth} = useAuth()
   const containerRef = useRef<HTMLDivElement>(null);
   const subTitleRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
@@ -64,6 +69,21 @@ const heroRef = useRef(null);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setArrivals] = useState([]);
 
+useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    console.log('token', token)
+    if (token) {
+      localStorage.setItem('accessToken', token);
+      window.history.replaceState({}, '', '/');
+      checkAuth()
+      toast({
+        title: 'Welcome',
+        description: 'Successfully signed in with Google',
+      });
+      navigate('/');
+    }
+  }, [checkAuth]);
 
   useEffect(() => {
   const loadFeatured = async () => {
