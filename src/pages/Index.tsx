@@ -45,7 +45,7 @@ const images = heroContent.map(content => content.image);
 
 export default function Index() {
   const navigate = useNavigate()
-  const {checkAuth, handleGoogleCallback} = useAuth()
+  const {checkAuth} = useAuth()
   const containerRef = useRef<HTMLDivElement>(null);
   const subTitleRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
@@ -75,27 +75,25 @@ useEffect(() => {
   const token = urlParams.get('token');
   console.log('🔍 Token from URL:', token);
   
-  if(token){
+  if (token) {
+    console.log('✅ Token found, storing...');
+    setToken(token)
+    console.log('📦 Token stored:', localStorage.getItem('accessToken'));
+    
     window.history.replaceState({}, '', '/');
     
-    // Add 300ms delay before handling callback
+    // Make checkAuth async
     setTimeout(() => {
-      handleGoogleCallback(token).then((success) => {
-        if(success){
-          toast({
-            title: 'Welcome',
-            description: 'Successfully signed in with Google',
-          });
-        } else {
-          toast({
-            title: 'Error',
-            description: 'Failed to authenticate',
-            variant: 'destructive'
-          });
-        }
+    checkAuth().then(() => {
+      console.log('✅ checkAuth completed');
+      toast({
+        title: 'Welcome',
+        description: 'Successfully signed in with Google',
       });
-    }, 300); // Add this delay
-  }
+      navigate('/');
+    });
+  }, 500); // 500ms delay
+}
 }, []);
 
   useEffect(() => {

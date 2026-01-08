@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
-import { signup as signupAPI, getProfile, loginApi, googleAuth, setToken} from '@/services/api';
+import { signup as signupAPI, getProfile, loginApi, googleAuth} from '@/services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -9,7 +9,6 @@ interface AuthContextType {
   signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: ()=> void,
   checkAuth: () => Promise<void>,
-  handleGoogleCallback: (token: string) => Promise<boolean>,
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -95,24 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     googleAuth();
   }
 
-  const handleGoogleCallback = async (token: string): Promise<boolean> => {
-  try {
-    console.log('🔑 Setting token...');
-    setToken(token);
-    
-    // Add small delay to ensure token is persisted
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    console.log('👤 Loading profile...');
-    await loadUserProfile();
-    
-    console.log('✅ Google callback successful');
-    return true;
-  } catch (error) {
-    console.error('❌ Google callback failed:', error);
-    return false;
-  }
-}
+  
+
   const loadUserProfile = async () => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -175,7 +158,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signup, 
       loginWithGoogle,
       logout,
-      handleGoogleCallback,
       isAuthenticated: !!user,
       checkAuth
     }}>
