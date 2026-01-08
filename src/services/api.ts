@@ -12,7 +12,7 @@ const getToken = (): string | null =>{
     return localStorage.getItem('accessToken')
 }
 
-const setToken = (token : string): void=>{
+export const setToken = (token : string): void=>{
     localStorage.setItem("accessToken", token)
 }
 const removeToken = (): void =>{

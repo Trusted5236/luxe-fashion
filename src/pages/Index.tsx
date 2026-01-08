@@ -18,6 +18,7 @@ import { fetchProducts } from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { setToken } from '@/services/api';
 
 
 gsap.registerPlugin(ScrollTrigger)
@@ -76,7 +77,7 @@ useEffect(() => {
   
   if (token) {
     console.log('✅ Token found, storing...');
-    localStorage.setItem('accessToken', token);
+    setToken(token)
     console.log('📦 Token stored:', localStorage.getItem('accessToken'));
     
     window.history.replaceState({}, '', '/');
