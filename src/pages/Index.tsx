@@ -73,28 +73,43 @@ const heroRef = useRef(null);
 useEffect(() => {
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('token');
+  const error = urlParams.get('error');
+  
+  console.log('🔍 URL Params:', window.location.search);
   console.log('🔍 Token from URL:', token);
+  console.log('🔍 Error from URL:', error);
+  
+  if (error) {
+    toast({
+      title: 'Authentication Failed',
+      description: 'Unable to sign in with Google',
+      variant: 'destructive'
+    });
+    window.history.replaceState({}, '', '/');
+    return;
+  }
   
   if (token) {
     console.log('✅ Token found, storing...');
-    setToken(token)
+    setToken(token);
     console.log('📦 Token stored:', localStorage.getItem('accessToken'));
     
+    // Clean URL first
     window.history.replaceState({}, '', '/');
     
-    // Make checkAuth async
-    setTimeout(() => {
-    checkAuth().then(() => {
+    // Then check auth with delay
+    setTimeout(async () => {
+      console.log('⏳ Calling checkAuth...');
+      await checkAuth();
       console.log('✅ checkAuth completed');
+      
       toast({
         title: 'Welcome',
         description: 'Successfully signed in with Google',
       });
-      navigate('/');
-    });
-  }, 500); // 500ms delay
-}
-}, []);
+    }, 500);
+  }
+}, [checkAuth]);
 
   useEffect(() => {
   const loadFeatured = async () => {
