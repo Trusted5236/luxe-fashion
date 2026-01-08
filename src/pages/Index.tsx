@@ -83,7 +83,7 @@ useEffect(() => {
       });
       navigate('/');
     }
-  }, [checkAuth]);
+  }, []);
 
   useEffect(() => {
   const loadFeatured = async () => {
