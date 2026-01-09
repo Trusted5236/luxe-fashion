@@ -12,6 +12,7 @@ export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const { itemCount } = useCart();
   const navigate = useNavigate();
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
 
   const getDashboardLink = () => {
     if (!user) return '/auth';
@@ -78,15 +79,67 @@ export function Navbar() {
               )}
             </Button>
             {isAuthenticated ? (
-              <div className="hidden sm:flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => navigate(getDashboardLink())}>
-                  <User className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={logout}>
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
+  <div className="hidden sm:flex items-center gap-2">
+    <div 
+      className="relative"
+      onMouseEnter={() => setShowAccountMenu(true)}
+      onMouseLeave={() => setShowAccountMenu(false)}
+    >
+      <Button variant="ghost" size="icon">
+        <User className="h-5 w-5" />
+      </Button>
+
+      {showAccountMenu && (
+        <div className="absolute right-0 top-full mt-2 w-72 bg-background border border-border rounded-lg shadow-lg p-4 z-50">
+          <div className="space-y-4">
+            <div className="border-b border-border pb-3">
+              <p className="font-medium text-heading">{user.name}</p>
+              <p className="text-sm text-label">{user.email}</p>
+            </div>
+            
+            <div>
+              <p className="text-xs text-label uppercase tracking-wide mb-2">Account Type</p>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary capitalize">
+                {user.role}
+              </span>
+            </div>
+
+            {user.role === 'user' && (
+              <Button 
+                variant="luxury" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  navigate('/request-seller');
+                  setShowAccountMenu(false);
+                }}
+              >
+                Become a Seller
+              </Button>
+            )}
+
+            {user.role !== 'user' && (
+              <Button 
+                variant="luxury-outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  navigate(getDashboardLink());
+                  setShowAccountMenu(false);
+                }}
+              >
+                Go to Dashboard
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+    <Button variant="ghost" size="sm" onClick={logout}>
+      Sign Out
+    </Button>
+  </div>
+) : (
               <Button
                 variant="luxury-outline"
                 size="sm"
@@ -103,10 +156,10 @@ export function Navbar() {
         <div
           className={cn(
             "lg:hidden overflow-hidden transition-all duration-300",
-            isOpen ? "max-h-96 pb-4" : "max-h-0"
+            isOpen ? "max-h-99 pb-4" : "max-h-0"
           )}
         >
-          <div className="flex flex-col gap-2 pt-4 border-t border-border">
+          <div className="flex flex-col gap-2 pt-2 border-t border-border">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -117,26 +170,74 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            <div className="pt-4 border-t border-border mt-2">
+
               {isAuthenticated ? (
-                <div className="flex flex-col gap-2">
-                  <Link
-                    to={getDashboardLink()}
-                    className="py-2 text-sm font-medium text-body hover:text-foreground"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    My Account
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setIsOpen(false);
-                    }}
-                    className="py-2 text-sm font-medium text-body hover:text-foreground text-left"
-                  >
-                    Sign Out
-                  </button>
-                </div>
+                <div className="pt-4 border-t border-border mt-2">
+  {isAuthenticated ? (
+    <div className="flex flex-col gap-3">
+      <div className="border-b border-border pb-3">
+        <p className="font-medium text-heading">{user.name}</p>
+        <p className="text-sm text-label">{user.email}</p>
+      </div>
+      
+      <div>
+        <p className="text-xs text-label uppercase tracking-wide mb-2">Account Type</p>
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary capitalize">
+          {user.role}
+        </span>
+      </div>
+
+      {user.role === 'user' && (
+        <Button 
+          variant="luxury" 
+          size="sm" 
+          className="w-full"
+          onClick={() => {
+            navigate('/request-seller');
+            setIsOpen(false);
+          }}
+        >
+          Become a Seller
+        </Button>
+      )}
+
+      {user.role !== 'user' && (
+        <Button 
+          variant="luxury-outline" 
+          size="sm" 
+          className="w-full"
+          onClick={() => {
+            navigate(getDashboardLink());
+            setIsOpen(false);
+          }}
+        >
+          Go to Dashboard
+        </Button>
+      )}
+
+      <button
+        onClick={() => {
+          logout();
+          setIsOpen(false);
+        }}
+        className="py-2 text-sm font-medium text-body hover:text-foreground text-left"
+      >
+        Sign Out
+      </button>
+    </div>
+  ) : (
+    <Button
+      variant="luxury"
+      className="w-full"
+      onClick={() => {
+        navigate('/auth');
+        setIsOpen(false);
+      }}
+    >
+      Sign In
+    </Button>
+  )}
+</div>
               ) : (
                 <Button
                   variant="luxury"
@@ -151,7 +252,7 @@ export function Navbar() {
               )}
             </div>
           </div>
-        </div>
+
       </nav>
     </header>
   );

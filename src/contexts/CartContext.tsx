@@ -11,6 +11,7 @@ interface CartContextType {
   updateQuantity: (productId: string, size: string, color: string, quantity: number) => void;
   clearCart: () => void;
   itemCount: number;
+  loading : boolean,
   total: number;
 }
 
@@ -224,6 +225,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart,
       itemCount,
       total,
+      loading
     }}>
       {children}
     </CartContext.Provider>

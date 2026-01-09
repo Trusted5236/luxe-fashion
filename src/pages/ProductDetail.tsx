@@ -27,7 +27,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   console.log('Product ID from params:', id);
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addItem, loading } = useCart();
   
   // const product = mockProducts.find(p => p.id === id);
   // const relatedProducts = mockProducts.filter(p => p.id !== id && p.category === product?.category).slice(0, 4);
@@ -39,7 +39,7 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [product, setProduct] = useState(null);
   console.log('Product ID:', product);
-  const [loading, setLoading] = useState(true);
+  const [isloading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
 
@@ -98,15 +98,15 @@ export default function ProductDetail() {
     addItem(product, selectedSize, color, quantity);
   };
 
-      if (loading) {
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    </Layout>
-  );
-}
+//       if (loading) {
+//   return (
+//     <Layout>
+//       <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+//         <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+//       </div>
+//     </Layout>
+//   );
+// }
 
   return (
     <>
@@ -285,7 +285,7 @@ export default function ProductDetail() {
                 className="lg:flex-1 md:flex-1"
                 onClick={handleAddToCart}
               >
-                {'Add to Cart'}
+                {loading ? "Loading..." : 'Add to Cart'}
               </Button>
               <Button variant="luxury-outline" size="xl">
                 <Heart className="h-5 w-5" />
