@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { requestPasswordReset } from '@/services/api';
 import { set } from 'date-fns';
+import SEO from '@/components/SEO';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -37,7 +38,24 @@ export default function ForgotPassword() {
   };
 
   return (
-    <Layout showFooter={false}>
+    <>
+      <SEO 
+        title="Reset Password | Luxe Fashion - Recover Your Account"
+        description="Forgot your Luxe Fashion password? Reset it securely and regain access to your exclusive luxury fashion account, saved items, order history, and personalized recommendations."
+        keywords="luxury fashion password reset, designer account recovery, Luxe Fashion forgot password, account recovery luxury boutique"
+        canonical="/forgot-password"
+        noIndex={true}
+        ogTitle="Reset Password | Luxe Fashion"
+        ogDescription="Securely reset your password and regain access to your luxury fashion account."
+        ogImage="https://luxe-fashion-three.vercel.app/og-password.jpg"
+        ogType="website"
+        twitterCard="summary"
+        twitterTitle="Reset Password | Luxe Fashion"
+        twitterDescription="Securely reset your password and regain account access."
+        twitterImage="https://luxe-fashion-three.vercel.app/og-password.jpg"
+      />
+
+      <Layout showFooter={false}>
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
@@ -94,5 +112,6 @@ export default function ForgotPassword() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

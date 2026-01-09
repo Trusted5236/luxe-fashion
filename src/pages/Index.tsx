@@ -19,6 +19,7 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { setToken } from '@/services/api';
+import SEO from '@/components/SEO';
 
 
 gsap.registerPlugin(ScrollTrigger)
@@ -387,6 +388,22 @@ useEffect(() => {
 
 
   return (
+    <>
+   <SEO 
+        title="Luxe Fashion | Premium Designer Clothing & Luxury Fashion"
+        description="Shop the finest luxury fashion and designer clothing at Luxe Fashion. Curated collections, exclusive pieces, and timeless elegance. Free shipping over $200, 30-day returns guaranteed."
+        keywords="luxury fashion, designer clothing, premium fashion, high-end apparel, luxury accessories, designer brands, exclusive fashion, luxury wardrobe, premium style, designer wear, luxury boutique, high fashion, couture clothing, luxury shopping, designer collections"
+        canonical="/"
+        ogTitle="Luxe Fashion | Premium Designer Clothing & Luxury Fashion"
+        ogDescription="Shop the finest luxury fashion and designer clothing. Curated collections, exclusive pieces, and timeless elegance. Free shipping over $200."
+        ogImage="https://luxe-fashion-three.vercel.app/og-home.jpg"
+        ogType="website"
+        twitterCard="summary_large_image"
+        twitterTitle="Luxe Fashion | Premium Designer Clothing"
+        twitterDescription="Shop the finest luxury fashion and designer clothing. Curated collections, exclusive pieces, and timeless elegance."
+        twitterImage="https://luxe-fashion-three.vercel.app/og-home.jpg"
+      />
+
     <Layout>
       {/* Hero Section */}
       <div className="bg-[rgb(186,123,91)]/90">
@@ -578,5 +595,6 @@ useEffect(() => {
       </section>
       </div>
     </Layout>
+    </>
   );
 }

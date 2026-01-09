@@ -12,6 +12,7 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { createOrder } from '@/services/api';
 import { PayPalButton } from '@/components/PaypalButton';
+import SEO from '@/components/SEO';
 
 const steps = ['Shipping', 'Payment']; // Removed 'Review'
 
@@ -127,6 +128,23 @@ export default function Checkout() {
   }
 
   return (
+    <>
+      <SEO 
+        title="Secure Checkout | Luxe Fashion - Complete Your Purchase"
+        description="Complete your luxury fashion purchase with our secure checkout. Multiple payment options including PayPal, encrypted transactions, and complimentary shipping on orders over $200."
+        keywords="luxury fashion checkout, secure payment designer clothing, premium fashion purchase, Luxe Fashion payment, secure designer checkout, luxury payment gateway"
+        canonical="/checkout"
+        noIndex={true}
+        ogTitle="Secure Checkout | Luxe Fashion"
+        ogDescription="Complete your luxury fashion purchase with our secure checkout system."
+        ogImage="https://luxe-fashion-three.vercel.app/og-checkout.jpg"
+        ogType="website"
+        twitterCard="summary"
+        twitterTitle="Secure Checkout | Luxe Fashion"
+        twitterDescription="Complete your luxury fashion purchase securely."
+        twitterImage="https://luxe-fashion-three.vercel.app/og-checkout.jpg"
+      />
+
     <Layout showFooter={false}>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -358,5 +376,6 @@ export default function Checkout() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

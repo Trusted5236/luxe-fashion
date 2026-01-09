@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import SEO from '@/components/SEO';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -76,6 +77,22 @@ export default function Auth() {
   }
 
   return (
+    <>
+    <SEO 
+        title="Sign In | Luxe Fashion - Premium Fashion Authentication"
+        description="Sign in to your Luxe Fashion account to access exclusive collections, save favorites, and enjoy personalized shopping. Secure login with email or Google authentication."
+        keywords="luxury fashion login, designer clothing account, premium fashion sign in, Luxe Fashion authentication, secure login designer wear, luxury boutique account"
+        canonical="/auth"
+        ogTitle="Sign In | Luxe Fashion"
+        ogDescription="Sign in to access exclusive luxury collections, save favorites, and enjoy personalized shopping."
+        ogImage="https://luxe-fashion-three.vercel.app/og-auth.jpg"
+        ogType="website"
+        twitterCard="summary"
+        twitterTitle="Sign In | Luxe Fashion"
+        twitterDescription="Sign in to access exclusive luxury collections and personalized shopping."
+        twitterImage="https://luxe-fashion-three.vercel.app/og-auth.jpg"
+      />
+
     <Layout showFooter={false}>
       <div className="min-h-[calc(100vh-4rem)] flex">
         {/* Form Side */}
@@ -250,5 +267,6 @@ export default function Auth() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

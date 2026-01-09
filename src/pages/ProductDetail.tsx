@@ -9,6 +9,19 @@ import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 import { individualProducts } from '@/services/api';
 import { set } from 'date-fns';
+import SEO from '@/components/SEO';
+
+
+interface ProductPageProps {
+  product: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    brand: string;
+    image: string;
+  };
+}
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -96,6 +109,22 @@ export default function ProductDetail() {
 }
 
   return (
+    <>
+    <SEO 
+        title={`${product.name} | Luxe Fashion - Designer ${product.category}`}
+        description={`Shop ${product.name} from our exclusive luxury collection. ${product.description}. Free shipping over $200, secure payment, and 30-day returns.`}
+        keywords={`${product.name}, luxury ${product.category}, designer ${product.category}, premium fashion, ${product.brand}, luxury shopping`}
+        canonical={`/products/${product.id}`}
+        ogTitle={`${product.name} | Luxe Fashion`}
+        ogDescription={`Shop ${product.name} from our exclusive luxury collection. ${product.description}`}
+        ogImage={product.image}
+        ogType="product"
+        twitterCard="summary_large_image"
+        twitterTitle={`${product.name} | Luxe Fashion`}
+        twitterDescription={`Shop ${product.name} from our exclusive luxury collection.`}
+        twitterImage={product.image}
+      />
+
     <Layout>
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
@@ -290,5 +319,6 @@ export default function ProductDetail() {
         )}
       </div>
     </Layout>
+    </>
   );
 }

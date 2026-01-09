@@ -23,7 +23,7 @@ export const heroContent = [
     titleLine1: 'Modern',
     titleLine2: 'Refinement',
     description:
-      'Premium menswear designed with precision, sophistication, and effortless style in mind.',
+      'Premium mens wear designed with precision, sophistication, and effortless style in mind.',
     cta: 'Men',
     ctag : "Shop Collection",
     image : "https://i.pinimg.com/1200x/cf/a4/6f/cfa46fa41f7d5e93f15d511568287dde.jpg"

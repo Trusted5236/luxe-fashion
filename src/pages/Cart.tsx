@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
+import SEO from '@/components/SEO';
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, total, itemCount } = useCart();
@@ -31,6 +32,23 @@ export default function Cart() {
   const grandTotal = total + shipping;
 
   return (
+    <>
+      <SEO 
+        title="Shopping Cart | Luxe Fashion - Review Your Luxury Selections"
+        description="Review your curated selection of luxury fashion items. Secure checkout, complimentary shipping on orders over $200, and hassle-free 30-day returns on all designer pieces."
+        keywords="luxury shopping cart, designer clothing checkout, premium fashion basket, Luxe Fashion cart, luxury items checkout, designer wear shopping bag"
+        canonical="/cart"
+        ogTitle="Shopping Cart | Luxe Fashion"
+        ogDescription="Review your curated selection of luxury fashion items. Secure checkout and complimentary shipping over $200."
+        ogImage="https://luxe-fashion-three.vercel.app/og-cart.jpg"
+        ogType="website"
+        twitterCard="summary"
+        twitterTitle="Shopping Cart | Luxe Fashion"
+        twitterDescription="Review your curated luxury fashion selections."
+        twitterImage="https://luxe-fashion-three.vercel.app/og-cart.jpg"
+      />
+      
+
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <h1 className="font-display text-3xl md:text-4xl font-medium mb-8">Shopping Cart</h1>
@@ -164,5 +182,6 @@ export default function Cart() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

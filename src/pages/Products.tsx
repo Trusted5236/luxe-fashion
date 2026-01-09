@@ -13,6 +13,7 @@ import { fetchProducts } from '@/services/api';
 import { set } from 'date-fns';
 import { fetchCategories, individualProducts} from '@/services/api';
 import { useParams } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
@@ -213,6 +214,22 @@ export default function Products() {
   );
 
   return (
+    <>
+    <SEO 
+        title="Luxury Fashion Collection | Designer Clothing - Luxe Fashion"
+        description="Discover our curated collection of luxury fashion and designer clothing. Premium quality, timeless elegance, and exclusive pieces for the discerning shopper. Shop by category: men's, women's, accessories, and seasonal collections."
+        keywords="luxury fashion collection, designer clothing, premium apparel, high-end fashion, luxury accessories, designer brands, exclusive fashion, curated luxury collection, designer wear, premium style, luxury boutique collection, high fashion pieces"
+        canonical="/products"
+        ogTitle="Luxury Fashion Collection | Designer Clothing"
+        ogDescription="Discover our curated collection of luxury fashion and designer clothing. Premium quality, timeless elegance, and exclusive pieces."
+        ogImage="https://luxe-fashion-three.vercel.app/og-products.jpg"
+        ogType="product.group"
+        twitterCard="summary_large_image"
+        twitterTitle="Luxury Fashion Collection | Luxe Fashion"
+        twitterDescription="Discover our curated collection of luxury fashion and designer clothing."
+        twitterImage="https://luxe-fashion-three.vercel.app/og-products.jpg"
+      />
+
     <Layout>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -344,5 +361,6 @@ export default function Products() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }
