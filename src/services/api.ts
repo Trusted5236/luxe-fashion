@@ -2,7 +2,7 @@ import {SignupPayload, User, loginPayload, requestPasswordPayload, resetPassword
 
 
 
-const BASE_URL = import.meta.env.VITE_BASE_URL ?? "http://luxe-fashion-backend-production.up.railway.app/api"
+const BASE_URL = import.meta.env.VITE_BASE_URL ?? "https://luxe-fashion-backend-production.up.railway.app/api"
 
 console.log('🔍 Checking environment:');
 console.log('VITE_BASE_URL:', import.meta.env.VITE_BASE_URL);
