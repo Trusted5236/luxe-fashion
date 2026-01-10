@@ -19,6 +19,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Unauthorized from "./pages/Unauthorized";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import OrderSuccess from "./pages/OrderSucess";
+import OrdersPage from "./pages/OrderPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/order-success" element={<OrderSuccess/>} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order" element={<OrdersPage />} />
               <Route 
           path="/seller" 
           element={

@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,10 +27,23 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
-  if (!user) {
+      if(authLoading) {
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    </Layout>
+  );
+}
+
+  if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
+
+
+  
   if (isLoading) {
     return (
       <Layout>
