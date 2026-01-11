@@ -104,7 +104,7 @@ export function Navbar() {
               </span>
             </div>
 
-            {user.role === 'user' && (
+            {/* {user.role === 'user' && (
               <Button 
                 variant="luxury" 
                 size="sm" 
@@ -116,7 +116,7 @@ export function Navbar() {
               >
                 Become a Seller
               </Button>
-            )}
+            )} */}
 
             {user.role !== 'user' && (
               <Button 
