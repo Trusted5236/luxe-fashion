@@ -17,7 +17,7 @@ const footerLinks = {
     { name: 'Shipping & Returns', href: '/shipping' },
     { name: 'Size Guide', href: '/size-guide' },
     { name: 'FAQ', href: '/faq' },
-    { name: 'Track Order', href: '/track' },
+    { name: 'Track Order', href: '/order' },
   ],
   company: [
     { name: 'About Us', href: '/about' },

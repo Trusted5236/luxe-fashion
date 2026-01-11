@@ -479,3 +479,45 @@ export const googleAuth = async () =>{
     window.location.href = `${BASE_URL}/authentication/google`
 }
 
+export const getOrders = async ()=>{
+    const token = getToken()
+    if(!token){
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/order`, { 
+        method : "GET",
+        headers : {
+            'Content-Type' : 'application/json',
+            'Authorization' : `Bearer ${token}`
+        },
+    })
+
+    const data = await response.json()
+    if(!response.ok){
+         throw new Error(data.message || 'Failed to get admin stats');
+    }
+    return data
+}
+
+export const deleteOrder = async (order: string) => {
+    const token = getToken();
+    if (!token) {
+        throw new Error('No token found. Please login');
+    }
+
+    const response = await fetch(`${BASE_URL}/order/${order}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete category');
+    }
+    return data;
+}
+

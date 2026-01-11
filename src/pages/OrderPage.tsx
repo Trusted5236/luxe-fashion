@@ -4,10 +4,14 @@ import { Layout } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { getOrders, deleteOrder } from '@/services/api';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 
 export default function OrdersPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
+  console.log('ORDERS', orders)
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -15,8 +19,8 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       try {
         // Replace with your actual API call
-        // const response = await getOrders();
-        // setOrders(response.data);
+        const response = await getOrders();
+        setOrders(response.order || []);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -26,6 +30,16 @@ export default function OrdersPage() {
 
     fetchOrders();
   }, []);
+
+  const handleDeleteOrder = async (orderId: string) => {
+  
+  try {
+    await deleteOrder(orderId);
+    setOrders(orders.filter(o => o._id !== orderId));
+  } catch (error) {
+    console.error('Error deleting order:', error);
+  }
+};
 
       if(authLoading) {
   return (
@@ -111,6 +125,14 @@ export default function OrdersPage() {
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}>
                         {order.orderStatus}
                       </span>
+
+                      <Button 
+    variant="ghost" 
+    size="icon"
+    onClick={() => handleDeleteOrder(order._id)}
+  >
+    <Trash2 className="h-4 w-4 text-red-600" />
+  </Button>
                       <div className="text-right">
                         <p className="text-sm text-label">Total</p>
                         <p className="font-display text-xl font-semibold">${order.totalPrice}</p>
@@ -125,7 +147,7 @@ export default function OrdersPage() {
                       <div>
                         <p className="font-medium">Shipping Address</p>
                         <p className="text-label mt-1">
-                          {order.shippingAddress.street}, {order.shippingAddress.city}
+                          {order.shippingAddress.address}, {order.shippingAddress.city}
                           <br />
                           {order.shippingAddress.state} {order.shippingAddress.zipCode}
                           <br />
@@ -140,12 +162,12 @@ export default function OrdersPage() {
                         {order.products.map((item, index) => (
                           <div key={index} className="flex items-center gap-3 text-sm">
                             <img 
-                              src={item.product?.images?.[0] || '/placeholder.jpg'} 
-                              alt={item.product?.name || 'Product'} 
+                              src={item.image || '/placeholder.jpg'} 
+                              alt={item.title || 'Product'} 
                               className="w-12 h-16 object-cover rounded"
                             />
                             <div className="flex-1">
-                              <p className="font-medium">{item.product?.name || 'Product'}</p>
+                              <p className="font-medium">{item.title || 'Product'}</p>
                               <p className="text-label">Qty: {item.quantity}</p>
                             </div>
                             <p className="font-medium">${item.price}</p>
