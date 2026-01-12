@@ -90,7 +90,8 @@ export function Navbar() {
       </Button>
 
       {showAccountMenu && (
-        <div className="absolute right-0 top-full mt-2 w-72 bg-background border border-border rounded-lg shadow-lg p-4 z-50">
+        <div  className="absolute right-0 top-full pt-2 z-50">
+          <div className="w-72 bg-background border border-border rounded-lg shadow-lg p-4">
           <div className="space-y-4">
             <div className="border-b border-border pb-3">
               <p className="font-medium text-heading">{user.name}</p>
@@ -132,6 +133,7 @@ export function Navbar() {
               </Button>
             )}
           </div>
+        </div>
         </div>
       )}
     </div>
